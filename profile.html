@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Profile - Student Question Paper Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<!-- ✅ Firebase Compat SDKs (Same as index.html) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root {
+    --font-main: 'Plus Jakarta Sans', sans-serif;
+    --font-head: 'Space Grotesk', sans-serif;
+    --bg-base: #06060c;
+    --bg-mesh: radial-gradient(circle at 15% 15%, #1d0c3d 0%, transparent 45%), radial-gradient(circle at 85% 15%, #0b1a4a 0%, transparent 45%), radial-gradient(circle at 50% 85%, #051d38 0%, transparent 50%), #06060c;
+    --glass-bg: rgba(10, 10, 22, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-hover: rgba(255, 255, 255, 0.12);
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-border: rgba(255, 255, 255, 0.07);
+    --text-primary: #f8f7ff;
+    --text-secondary: rgba(248, 247, 255, 0.70);
+    --text-muted: rgba(248, 247, 255, 0.40);
+    --accent-1: #b58eff;
+    --accent-2: #6fbaff;
+    --accent-3: #ff8ec2;
+    --accent-grad: linear-gradient(135deg, #b58eff, #6fbaff);
+    --accent-grad-glow: 0 0 20px rgba(181, 142, 255, 0.3);
+    --accent-grad2: linear-gradient(135deg, #ff8ec2, #b58eff);
+    --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 35px rgba(181, 142, 255, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.04);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --scrollbar-track: rgba(255, 255, 255, 0.02);
+    --scrollbar-thumb: rgba(181, 142, 255, 0.3);
+    --toast-bg: rgba(10, 8, 25, 0.95);
+    --header-bg: rgba(6, 6, 12, 0.8);
+    --modal-bg: rgba(8, 7, 20, 0.98);
+    --success: #34d399;
+    --error: #fb7185;
+    --warning: #fbbf24;
+  }
+  [data-theme="light"] {
+    --bg-base: #f4f6fb;
+    --bg-mesh: radial-gradient(circle at 15% 15%, #e6daff 0%, transparent 45%), radial-gradient(circle at 85% 15%, #d1e4ff 0%, transparent 45%), radial-gradient(circle at 50% 85%, #d4f0ff 0%, transparent 50%), #f4f6fb;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(155, 109, 255, 0.15);
+    --glass-hover: rgba(155, 109, 255, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(155, 109, 255, 0.18);
+    --text-primary: #120a2e;
+    --text-secondary: rgba(18, 10, 46, 0.75);
+    --text-muted: rgba(18, 10, 46, 0.45);
+    --accent-1: #8b5cf6;
+    --accent-2: #3b82f6;
+    --accent-3: #ec4899;
+    --accent-grad: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    --accent-grad-glow: 0 0 20px rgba(139, 92, 246, 0.25);
+    --shadow-card: 0 12px 36px rgba(139, 92, 246, 0.06);
+    --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.12);
+    --input-bg: rgba(255, 255, 255, 0.8);
+    --input-border: rgba(139, 92, 246, 0.2);
+    --scrollbar-track: rgba(139, 92, 246, 0.04);
+    --scrollbar-thumb: rgba(139, 92, 246, 0.25);
+    --toast-bg: rgba(255, 255, 255, 0.98);
+    --header-bg: rgba(244, 246, 251, 0.85);
+    --modal-bg: rgba(255, 255, 255, 0.98);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body { font-family: var(--font-main); background: var(--bg-base); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; transition: background 0.4s, color 0.4s; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; background: var(--bg-mesh); pointer-events: none; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
+  .glass { background: var(--glass-bg); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid var(--glass-border); }
+  header { position: sticky; top: 0; z-index: 100; background: var(--header-bg); backdrop-filter: blur(24px) saturate(180%); border-bottom: 1px solid var(--glass-border); padding: 0 clamp(16px, 4vw, 40px); height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; transition: background 0.4s; }
+  .header-brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; text-decoration: none; color: inherit; }
+  .header-brand .brand-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-grad); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; box-shadow: var(--accent-grad-glow); }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .brand-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 800; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 0.65rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .btn-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+  .btn-icon:hover { background: var(--glass-hover); color: var(--accent-1); border-color: rgba(181,142,255,0.25); }
+  .btn-home { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 50px; background: var(--accent-grad); border: none; color: #fff; font-family: var(--font-main); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; box-shadow: var(--accent-grad-glow); white-space: nowrap; }
+  .btn-home:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(181,142,255,0.45); }
+  .card-dropdown { position: absolute; right: 0; top: 46px; min-width: 180px; background: var(--modal-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); display: none; z-index: 20; animation: dropIn 0.18s ease; }
+  @keyframes dropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+  .card-dropdown button { width: 100%; padding: 10px 14px; border-radius: 9px; background: none; border: none; text-align: left; font-family: var(--font-main); font-size: 0.82rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.15s, color 0.15s; }
+  .card-dropdown button:hover { background: var(--glass-hover); color: var(--text-primary); }
+  main { position: relative; z-index: 1; padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 40px); max-width: 1200px; margin: 0 auto; }
+  .profile-header-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 28px; padding: clamp(24px, 4vw, 44px); margin-bottom: 36px; display: flex; align-items: center; gap: 32px; backdrop-filter: blur(30px); flex-wrap: wrap; position: relative; overflow: hidden; box-shadow: var(--shadow-card); }
+  .profile-header-card::before { content: ""; position: absolute; top: -40%; right: -8%; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(181,142,255,0.22), transparent 70%); pointer-events: none; }
+  .profile-header-card::after { content: ""; position: absolute; bottom: -40%; left: -5%; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(111,186,255,0.1), transparent 70%); pointer-events: none; }
+  .profile-avatar-big { width: 108px; height: 108px; border-radius: 50%; border: 3px solid var(--accent-1); object-fit: cover; box-shadow: 0 0 0 6px rgba(181,142,255,0.12), 0 8px 28px rgba(181,142,255,0.3); flex-shrink: 0; position: relative; z-index: 1; }
+  .profile-info { flex: 1; min-width: 220px; position: relative; z-index: 1; }
+  .profile-name { font-family: var(--font-head); font-size: clamp(1.4rem, 3.5vw, 1.9rem); font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .profile-email { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .profile-email i { color: var(--accent-2); }
+  .profile-stats { display: flex; gap: 14px; flex-wrap: wrap; position: relative; z-index: 1; }
+  .stat-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 18px; padding: 14px 22px; text-align: center; min-width: 100px; flex: 1; transition: all 0.2s; }
+  .stat-card:hover { background: rgba(181,142,255,0.05); border-color: rgba(181,142,255,0.2); transform: translateY(-3px); }
+  .stat-num { font-family: var(--font-head); font-size: 1.7rem; font-weight: 800; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+  .stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; font-weight: 600; }
+  .trophy-wall { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 22px; padding: 26px; margin-bottom: 36px; backdrop-filter: blur(20px); box-shadow: var(--shadow-card); }
+  .trophy-wall-header { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .trophy-wall-header i { color: #ffd700; }
+  .trophy-list { display: flex; gap: 10px; flex-wrap: wrap; }
+  .trophy-badge-item { display: flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 50px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 600; transition: all 0.2s; }
+  .trophy-badge-item:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); border-color: rgba(181,142,255,0.25); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 12px; }
+  .section-title { font-family: var(--font-head); font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; letter-spacing: -0.01em; }
+  .section-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--glass-border), transparent); margin-left: 12px; }
+  .title-badge { font-size: 0.7rem; font-weight: 700; padding: 3px 12px; border-radius: 50px; background: rgba(181, 142, 255, 0.12); color: var(--accent-1); border: 1px solid rgba(181, 142, 255, 0.25); font-family: var(--font-main); }
+  .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 48px; }
+  .file-card { background: var(--glass-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 22px; backdrop-filter: blur(20px); box-shadow: var(--shadow-card); position: relative; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; animation: cardIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .file-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent-grad); border-radius: 20px 20px 0 0; opacity: 0; transition: opacity 0.25s; }
+  .file-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-card), var(--shadow-glow); border-color: rgba(181,142,255,0.35); }
+  .file-card:hover::before { opacity: 1; }
+  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 8px; }
+  .card-pdf-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+  .card-pdf-icon.pdf-type { background: rgba(251,113,133,0.12); border: 1px solid rgba(251,113,133,0.25); color: var(--error); }
+  .card-pdf-icon.img-type { background: rgba(111,186,255,0.12); border: 1px solid rgba(111,186,255,0.25); color: var(--accent-2); }
+  .card-pdf-icon.doc-type { background: rgba(181,142,255,0.12); border: 1px solid rgba(181,142,255,0.25); color: var(--accent-1); }
+  .card-name { font-weight: 700; font-size: 0.92rem; color: var(--text-primary); margin-bottom: 12px; line-height: 1.45; font-family: var(--font-head); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-meta { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .card-meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); }
+  .card-meta-row i { width: 14px; color: var(--accent-1); font-size: 0.75rem; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tag { font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tag-course { background: rgba(181,142,255,0.12); color: var(--accent-1); border: 1px solid rgba(181,142,255,0.2); }
+  .tag-year { background: rgba(111,186,255,0.1); color: var(--accent-2); border: 1px solid rgba(111,186,255,0.2); }
+  .tag-sem { background: rgba(255,142,194,0.1); color: var(--accent-3); border: 1px solid rgba(255,142,194,0.2); }
+  .card-actions { display: flex; gap: 8px; }
+  .btn-download { flex: 1; padding: 11px; border-radius: 12px; background: var(--accent-grad); border: none; color: #fff; font-family: var(--font-main); font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.2s; box-shadow: var(--accent-grad-glow); }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(181,142,255,0.45); }
+  .btn-delete-card { width: 40px; height: 40px; border-radius: 12px; background: rgba(251,113,133,0.08); border: 1px solid rgba(251,113,133,0.25); color: var(--error); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; transition: all 0.2s; flex-shrink: 0; }
+  .btn-delete-card:hover { background: rgba(251,113,133,0.18); transform: translateY(-2px); }
+  .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--modal-bg); border: 1px solid var(--glass-border); border-radius: 28px; padding: 20px; width: 100%; max-width: 950px; height: 90vh; transform: translateY(24px) scale(0.97); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-shrink: 0; }
+  .modal-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .modal-close { width: 36px; height: 36px; border-radius: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .modal-close:hover { background: rgba(251,113,133,0.12); color: var(--error); }
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+  .toast { background: var(--toast-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; min-width: 280px; max-width: 360px; box-shadow: 0 12px 40px rgba(0,0,0,0.55); animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1); backdrop-filter: blur(20px); }
+  @keyframes toastIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+  .toast.hide { animation: toastOut 0.3s ease forwards; }
+  @keyframes toastOut { to { opacity:0; transform:translateX(30px); } }
+  .toast-icon { font-size: 1.25rem; flex-shrink: 0; }
+  .toast-icon.success { color: var(--success); }
+  .toast-icon.error { color: var(--error); }
+  .toast-icon.info { color: var(--accent-2); }
+  .toast-icon.warning { color: var(--warning); }
+  .toast-content { flex: 1; }
+  .toast-title { font-weight: 700; font-size: 0.875rem; margin-bottom: 2px; font-family: var(--font-head); }
+  .toast-msg { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
+  .toast-close { color: var(--text-muted); cursor: pointer; font-size: 0.88rem; transition: color 0.2s; }
+  .toast-close:hover { color: var(--text-primary); }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 768px) {
+    #previewModalBody { flex-direction: column; overflow-y: auto !important; }
+    #previewDocContainer { flex: none !important; height: 50vh !important; }
+    #previewCommentsContainer { flex: none !important; height: 38vh !important; }
+    .profile-header-card { flex-direction: column; align-items: center; text-align: center; gap: 20px; }
+    .profile-info { min-width: unset; width: 100%; text-align: center; }
+    .profile-email { justify-content: center; }
+    .profile-stats { justify-content: center; width: 100%; }
+    .stat-card { min-width: 80px; }
+    .brand-sub { display: none; }
+    .file-grid { grid-template-columns: 1fr; gap: 14px; }
+    .toast-container { bottom: 16px; right: 16px; left: 16px; align-items: stretch; }
+    .toast { min-width: unset; }
+  }
+
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<!-- ===== INITIAL LOADER OVERLAY ===== -->
+<div id="pageLoader" style="position: fixed; inset: 0; z-index: 1000; background: var(--bg-base); background-image: var(--bg-mesh); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s;">
+  <div style="text-align: center;">
+    <div class="spin" style="font-size: 3rem; color: var(--accent-1); margin-bottom: 20px; display: inline-block;"><i class="fas fa-circle-notch"></i></div>
+    <div style="font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; letter-spacing: 0.05em; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Academic Hub</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Synchronizing Profile...</div>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <a class="header-brand" href="index.html">
+    <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <div class="brand-text">
+      <span class="brand-title">QPHub</span>
+      <span class="brand-sub">Question Paper Hub</span>
+    </div>
+  </a>
+
+  <div class="header-actions">
+    <button class="btn-icon" id="themeToggle" title="Toggle theme"><i class="fas fa-moon" id="themeIcon"></i></button>
+    <a href="index.html" class="btn-home"><i class="fas fa-arrow-left"></i> <span>Back to Home</span></a>
+    
+    <!-- Profile Avatar Dropdown -->
+    <div id="userProfile" style="display: flex; align-items: center; position: relative;">
+      <img id="userAvatar" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="User Avatar" style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent-1); object-fit: cover; cursor: pointer;" onclick="toggleAuthDropdown(event)" />
+      <div id="authDropdown" class="card-dropdown" style="right: 0; top: 46px; min-width: 180px; text-align: left;">
+        <div style="padding: 10px 12px; border-bottom: 1px solid var(--glass-border); font-size: 0.78rem;">
+          <div id="userName" style="font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 156px;">Loading...</div>
+          <div id="userEmail" style="color: var(--text-muted); font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 156px;"></div>
+        </div>
+        <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main>
+  
+  <!-- Profile & Stats Dashboard -->
+  <div class="profile-header-card glass">
+    <img id="dashboardAvatar" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile Picture" class="profile-avatar-big" />
+    <div class="profile-info">
+      <h2 class="profile-name" id="dashboardName">Student Creator</h2>
+      <div class="profile-email"><i class="fas fa-envelope"></i> <span id="dashboardEmail">student@domain.com</span></div>
+      
+      <!-- Stats Row -->
+      <div class="profile-stats">
+        <div class="stat-card">
+          <div class="stat-num" id="statPersonalFiles">0</div>
+          <div class="stat-label">Your Uploads</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statLikesReceived">0</div>
+          <div class="stat-label">Likes Received</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statSharesReceived">0</div>
+          <div class="stat-label">Total Shares</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trophy milestones Wall -->
+  <div class="trophy-wall glass" id="trophyWallContainer" style="display:none;">
+    <div class="trophy-wall-header">
+      <i class="fas fa-trophy"></i> Trophies & Milestones Earned
+    </div>
+    <div class="trophy-list" id="trophyList">
+      <!-- Badges injected here -->
+    </div>
+  </div>
+
+  <!-- User's Uploads Section -->
+  <div class="section-header">
+    <div class="section-title">
+      <i class="fas fa-folder-open" style="color:var(--accent-2)"></i>
+      My Uploaded Papers
+      <span class="title-badge" id="personalFileCountBadge">0</span>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="file-grid" id="personalFileGrid"></div>
+
+</main>
+
+<!-- ===== DOCUMENT PREVIEW MODAL ===== -->
+<div class="modal-overlay" id="previewModalOverlay">
+  <div class="modal glass">
+    <div class="modal-header">
+      <div class="modal-title" id="previewModalTitle">Document Preview</div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="btn-home ripple-container" id="previewDownloadBtn" style="padding: 6px 16px; font-size: 0.8rem; height: 34px;">
+          <i class="fas fa-download"></i>
+          <span>Download</span>
+        </button>
+        <button class="modal-close" onclick="closePreviewModal()"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="modal-body" id="previewModalBody" style="flex: 1; overflow: hidden; display: flex; gap: 15px; border-radius: 12px;">
+      <!-- Left side: Document preview container -->
+      <div id="previewDocContainer" style="flex: 7; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.2); border-radius: 12px; position: relative; overflow: hidden;">
+        <!-- Iframe or Image will be injected here -->
+      </div>
+      
+      <!-- Right side: Comments container -->
+      <div id="previewCommentsContainer" style="flex: 3; height: 100%; display: flex; flex-direction: column; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; overflow: hidden;">
+        <div style="font-size: 0.85rem; font-weight: 700; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+          <span>💬 Comments</span>
+          <span class="title-badge" id="previewCommentsCount">0</span>
+        </div>
+        <div id="previewCommentsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; margin-bottom: 8px;">
+          <!-- Comments list -->
+        </div>
+        <div style="display: flex; gap: 6px; align-items: flex-end; border-top: 1px solid var(--glass-border); padding-top: 8px;">
+          <textarea id="commentInput" placeholder="Add a comment…" style="flex: 1; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; color: var(--text-primary); font-family: var(--font-main); font-size: 0.78rem; padding: 8px; outline: none; resize: none; height: 36px; line-height: 1.3;" onkeydown="handleCommentKey(event)" oninput="autoResizeTextarea(this)"></textarea>
+          <button id="postCommentBtn" onclick="postComment()" style="background: var(--accent-grad); border: none; color: #fff; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: transform 0.2s;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+'use strict';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCjNBGElikDMEdFuWsGeAfjo7cLHjCSnXU",
+  authDomain: "academic-hub-a70f1.firebaseapp.com",
+  projectId: "academic-hub-a70f1",
+  storageBucket: "academic-hub-a70f1.firebasestorage.app",
+  messagingSenderId: "76238913687",
+  appId: "1:76238913687:web:356b292bb690d8460269d2"
+};
+
+let db = null;
+let auth = null;
+let isFirebaseActive = false;
+let currentUser = null;
+let fileData = [];
+let currentPreviewBlobUrl = null;
+let currentPreviewPaperId = null;
+
+try {
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey.trim() !== "" && firebaseConfig.apiKey !== "AIzaSy...") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    auth = firebase.auth();
+    isFirebaseActive = true;
+  }
+} catch (err) {
+  console.error("Firebase init failed on profile page:", err);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (isFirebaseActive) {
+    auth.onAuthStateChanged(handleAuthStateChanged);
+    syncPapersFromFirestore();
+  } else {
+    loadSampleData();
+    showToast('info', 'Demo Mode Active', 'Profile page is simulated in Offline Demo Mode.');
+  }
+
+  // Click outside to close dropdown
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('authDropdown');
+    const userProfile = document.getElementById('userProfile');
+    if (dropdown && dropdown.style.display === 'block' && !userProfile.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  // Modal click outside to close handlers
+  document.getElementById('previewModalOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('previewModalOverlay')) closePreviewModal();
+  });
+});
+
+function handleAuthStateChanged(user) {
+  currentUser = user;
+
+  // Dismiss page loader
+  const loader = document.getElementById('pageLoader');
+  if (loader) {
+    loader.style.opacity = '0';
+    loader.style.visibility = 'hidden';
+    setTimeout(() => loader.remove(), 500);
+  }
+
+  if (!user) {
+    // If not logged in, wait a moment then redirect back to home page
+    showToast('warning', 'Login Required', 'You must log in to view your profile. Redirecting to home...');
+    setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+    return;
+  }
+
+  // Update profile header
+  document.getElementById('userAvatar').src = user.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
+  document.getElementById('userName').textContent = user.displayName || 'Student';
+  document.getElementById('userEmail').textContent = user.email || '';
+
+  // Update dashboard details
+  document.getElementById('dashboardAvatar').src = user.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
+  document.getElementById('dashboardName').textContent = user.displayName || 'Student Creator';
+  document.getElementById('dashboardEmail').textContent = user.email || '';
+
+  renderPersonalDashboard();
+}
+
+function toggleAuthDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('authDropdown');
+  dd.style.display = (dd.style.display === 'block') ? 'none' : 'block';
+}
+
+function logout() {
+  if (!isFirebaseActive) {
+    window.location.href = 'index.html';
+    return;
+  }
+  auth.signOut().then(() => {
+    window.location.href = 'index.html';
+  });
+}
+
+function syncPapersFromFirestore() {
+  if (!isFirebaseActive) return;
+  db.collection('papers').orderBy('date', 'desc').onSnapshot(snapshot => {
+    const papers = [];
+    snapshot.forEach(doc => {
+      papers.push({ id: doc.id, ...doc.data() });
+    });
+    fileData = papers;
+    renderPersonalDashboard();
+
+    // Real-time update of open preview modal comments
+    if (currentPreviewPaperId) {
+      renderCommentsList(currentPreviewPaperId);
+    }
+  }, err => {
+    console.error("Firestore sync error:", err);
+  });
+}
+
+function loadSampleData() {
+  fileData = [
+    { id:'s1', name:'BCA_2023_C_Programming.pdf', course:'BCA', year:'2023', subject:'C Programming', semester:'I', url:'#', size:'1.2 MB', date:'2023-11-10', fileType:'pdf', likesCount:15, likedBy:['demo1'], sharesCount:5, comments: [{id:'1', text:'This was super helpful!', userName:'Pratik Verma', userEmail:'admin@gmail.com', userUid:'demo1', date:new Date().toISOString()}], uploaderUid: 'demo-user', uploaderEmail: 'demo@domain.com', uploaderName: 'Student Creator (Demo)' },
+    { id:'s2', name:'BCA_2022_DBMS.pdf', course:'BCA', year:'2022', subject:'DBMS', semester:'III', url:'#', size:'980 KB', date:'2022-12-01', fileType:'pdf', likesCount:30, likedBy:[], sharesCount:12, comments: [], uploaderUid: 'demo-user', uploaderEmail: 'demo@domain.com', uploaderName: 'Student Creator (Demo)' }
+  ];
+  // Simulate log in
+  currentUser = {
+    displayName: "Student Creator (Demo)",
+    email: "demo@domain.com",
+    uid: "demo-user",
+    photoURL: "https://lh3.googleusercontent.com/a/default-user=s96-c"
+  };
+  handleAuthStateChanged(currentUser);
+}
+
+// Trophy Milestone Engine
+function getTrophy(likes) {
+  if (!likes || likes < 10) return null;
+  if (likes >= 5000) return { icon: '👑', label: 'Crown', class: 'trophy-crown', color: '#ffd700' };
+  if (likes >= 1000) return { icon: '🔴', label: 'Ruby', class: 'trophy-ruby', color: '#ff2a2a' };
+  if (likes >= 500)  return { icon: '💎', label: 'Diamond', class: 'trophy-diamond', color: '#5eaeff' };
+  if (likes >= 100)  return { icon: '🏆', label: 'Platinum', class: 'trophy-platinum', color: '#e5e4e2' };
+  if (likes >= 50)   return { icon: '🥇', label: 'Gold', class: 'trophy-gold', color: '#ffd700' };
+  if (likes >= 25)   return { icon: '🥈', label: 'Silver', class: 'trophy-silver', color: '#c0c0c0' };
+  return { icon: '🥉', label: 'Bronze', class: 'trophy-bronze', color: '#cd7f32' };
+}
+
+function renderPersonalDashboard() {
+  if (!currentUser) return;
+
+  const myPapers = fileData.filter(p => p.uploaderUid === currentUser.uid);
+  
+  // Calculate Stats
+  const totalUploads = myPapers.length;
+  let totalLikes = 0;
+  let totalShares = 0;
+  
+  myPapers.forEach(p => {
+    totalLikes += (p.likesCount || 0);
+    totalShares += (p.sharesCount || 0);
+  });
+
+  document.getElementById('statPersonalFiles').textContent = totalUploads;
+  document.getElementById('statLikesReceived').textContent = totalLikes;
+  document.getElementById('statSharesReceived').textContent = totalShares;
+  document.getElementById('personalFileCountBadge').textContent = totalUploads;
+
+  // Render Trophy wall
+  const trophyWall = document.getElementById('trophyWallContainer');
+  const trophyList = document.getElementById('trophyList');
+  trophyList.innerHTML = '';
+  
+  let hasTrophy = false;
+  myPapers.forEach(p => {
+    const trophy = getTrophy(p.likesCount || 0);
+    if (trophy) {
+      hasTrophy = true;
+      trophyList.innerHTML += `
+        <div class="trophy-badge-item glass" style="border-color:${trophy.color}40;">
+          <span>${trophy.icon}</span>
+          <span style="color:${trophy.color};">${trophy.label} Badge</span>
+          <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400; max-width: 140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">on ${escapeHtml(p.name)}</span>
+        </div>
+      `;
+    }
+  });
+
+  trophyWall.style.display = hasTrophy ? 'block' : 'none';
+
+  // Render Grid
+  const grid = document.getElementById('personalFileGrid');
+  if (myPapers.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; padding: 60px 20px; text-align: center; animation: fadeIn 0.5s ease;">
+        <div style="width:80px; height:80px; border-radius:22px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:var(--text-muted); margin-bottom:22px; animation: float 3s ease-in-out infinite;">📂</div>
+        <h3 style="font-family:var(--font-head); font-size:1.25rem; font-weight:700; margin-bottom:8px;">No Uploads Yet</h3>
+        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:24px; max-width:300px; line-height:1.6;">Papers you upload on QPHub will show up here along with your stats and engagement metrics.</p>
+        <a href="index.html" class="btn-home"><i class="fas fa-cloud-upload-alt"></i> Upload Now</a>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = myPapers.map((f, idx) => buildPersonalCard(f, idx)).join('');
+}
+
+function buildPersonalCard(f, idx) {
+  const delay  = Math.min(idx * 0.05, 0.4);
+  const ft     = f.fileType || 'pdf';
+  
+  const iconMap = { pdf:['pdf-type','fa-file-pdf'], image:['img-type','fa-file-image'], doc:['doc-type','fa-file-word'] };
+  const [iconCls, iconFa] = iconMap[ft] || iconMap.pdf;
+  const safeUrl  = escapeAttr(f.url || '#');
+  const safeName = escapeAttr(f.name || 'file');
+
+  const trophy = getTrophy(f.likesCount || 0);
+  const trophyBadge = trophy 
+    ? `<div class="card-trophy ${trophy.class}" title="${trophy.label} (${f.likesCount} Likes)" style="display:flex; align-items:center; gap:5px; font-size:0.72rem; font-weight:700; color:${trophy.color}; background:${trophy.color}18; padding:4px 10px; border-radius:50px; border:1px solid ${trophy.color}30; flex-shrink:0;">
+         <span>${trophy.icon}</span> <span>${trophy.label}</span>
+       </div>`
+    : '';
+
+  const commentsCount = f.comments ? f.comments.length : 0;
+
+  return `
+    <div class="file-card" style="animation-delay:${delay}s" id="card-${f.id}">
+      <div class="card-top">
+        <div class="card-pdf-icon ${iconCls}"><i class="fas ${iconFa}"></i></div>
+        ${trophyBadge}
+      </div>
+      <div class="card-name" title="${safeName}">${safeName}</div>
+      <div class="card-meta">
+        <div class="card-meta-row"><i class="fas fa-graduation-cap"></i>${f.course || ''}</div>
+        <div class="card-meta-row"><i class="fas fa-book"></i>${f.subject || ''}</div>
+        <div class="card-meta-row"><i class="fas fa-calendar-alt"></i>${f.year || ''}</div>
+        <div style="display:flex; gap:12px; margin-top:10px; padding-top:10px; border-top:1px solid var(--glass-border);">
+          <span style="display:flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:700; color:var(--error);"><i class="fas fa-heart" style="font-size:0.7rem;"></i>${f.likesCount || 0}</span>
+          <span style="display:flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:700; color:var(--accent-2);"><i class="fas fa-share-alt" style="font-size:0.7rem;"></i>${f.sharesCount || 0}</span>
+          <span style="display:flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:700; color:var(--accent-1);"><i class="fas fa-comments" style="font-size:0.7rem;"></i>${commentsCount}</span>
+        </div>
+      </div>
+      <div class="card-tags">
+        ${f.course ? `<span class="tag tag-course">${f.course}</span>` : ''}
+        ${f.year ? `<span class="tag tag-year">${f.year}</span>` : ''}
+        ${f.semester ? `<span class="tag tag-sem">Sem ${f.semester}</span>` : ''}
+      </div>
+      <div class="card-actions">
+        <button class="btn-download" onclick="openPreviewModal('${safeUrl}','${safeName}','${ft}', '${f.id}')" style="flex:1; background:var(--glass-bg); border:1px solid var(--glass-border); color:var(--text-primary); box-shadow:none; font-size:0.82rem;">
+          <i class="fas fa-eye"></i> View
+        </button>
+        <button class="btn-download" onclick="downloadFile('${safeUrl}','${safeName}')" style="flex:1.3; font-size:0.82rem;">
+          <i class="fas fa-download"></i> Download
+        </button>
+        <button class="btn-delete-card" onclick="deleteOwnFile('${f.id}')" title="Delete Paper"><i class="fas fa-trash-alt"></i></button>
+      </div>
+    </div>`;
+}
+
+async function deleteOwnFile(fileId) {
+  const file = fileData.find(f => f.id === fileId);
+  if (!file) return;
+
+  // Client-side ownership validation (Step 5)
+  if (!currentUser || file.uploaderUid !== currentUser.uid) {
+    showToast('error', 'Denied', 'You do not have permission to delete this paper.');
+    return;
+  }
+
+  const confirmMsg = `Are you sure you want to delete this paper?\n"${file.name}"`;
+  if (!confirm(confirmMsg)) return;
+
+  // Dim card for visual feedback (Step 4)
+  const card = document.getElementById(`card-${fileId}`);
+  if (card) { card.style.opacity = '0.5'; }
+
+  try {
+    if (isFirebaseActive) {
+      await db.collection('papers').doc(fileId).delete();
+      showToast('success', '🗑️ Deleted', 'Your paper has been permanently deleted.');
+      
+      // Remove from DOM on success
+      if (card) {
+        card.style.transition = 'all 0.3s ease';
+        card.style.transform = 'scale(0.85)';
+        card.style.opacity = '0';
+        setTimeout(() => card.remove(), 300);
+      }
+    } else {
+      // Local demo mode deletion
+      const idx = fileData.findIndex(f => f.id === fileId);
+      if (idx !== -1) fileData.splice(idx, 1);
+      
+      if (card) {
+        card.style.transition = 'all 0.3s ease';
+        card.style.transform = 'scale(0.85)';
+        card.style.opacity = '0';
+        setTimeout(() => card.remove(), 300);
+      }
+      setTimeout(() => renderPersonalDashboard(), 350);
+      showToast('success', '🗑️ Deleted', 'Deleted file in offline demo mode.');
+    }
+  } catch (err) {
+    // Restore opacity on failure
+    if (card) { card.style.opacity = '1'; }
+    console.error("Delete paper error:", err);
+    showToast('error', 'Delete Failed', err.message);
+  }
+}
+
+// Download PDF as Blob
+async function fetchFileAsBlob(url) {
+  if (!url || url === '#') throw new Error('Sample file has no URL');
+  try {
+    const resp = await fetch(url, { mode: 'cors' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.blob();
+  } catch {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.blob();
+  }
+}
+
+async function downloadFile(url, name) {
+  if (!url || url === '#') {
+    showToast('info', 'Sample File', 'Sample entries cannot be downloaded.');
+    return;
+  }
+  showToast('info', '⬇️ Starting…', name);
+  try {
+    const blob = await fetchFileAsBlob(url);
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = name;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(blobUrl); document.body.removeChild(a); }, 2000);
+    showToast('success', '✅ Downloaded', name);
+  } catch (err) {
+    window.open(url, '_blank');
+    showToast('info', 'Opened in tab', 'Could not force download, opened in new tab instead.');
+  }
+}
+
+// Document Preview Logic
+function openPreviewModal(url, name, fileType, paperId) {
+  if (!url || url === '#') {
+    showToast('info', 'Sample File', 'Sample entries cannot be previewed.');
+    return;
+  }
+
+  currentPreviewPaperId = paperId;
+  document.getElementById('previewModalTitle').textContent = name;
+  
+  const dlBtn = document.getElementById('previewDownloadBtn');
+  dlBtn.onclick = () => downloadFile(url, name);
+
+  const docContainer = document.getElementById('previewDocContainer');
+  docContainer.innerHTML = '<div class="spin" style="font-size: 2rem; color: var(--accent-1);"><i class="fas fa-circle-notch"></i></div>';
+
+  renderCommentsList(paperId);
+
+  setTimeout(() => {
+    if (fileType === 'image') {
+      docContainer.innerHTML = `<img src="${url}" alt="${name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
+    } else if (fileType === 'pdf') {
+      const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+      docContainer.innerHTML = `
+        <div style="width:100%; height:100%; display:flex; flex-direction:column;">
+          <iframe src="${gviewUrl}" style="flex:1; width:100%; border:none; border-radius:8px 8px 0 0;" title="PDF Preview"></iframe>
+          <div style="background:rgba(255,255,255,0.05); padding:8px 10px; text-align:center; font-size:0.75rem; border-top:1px solid var(--glass-border); display:flex; justify-content:center; gap:15px; align-items:center;">
+            <span style="color:var(--text-muted);">Preview issue?</span>
+            <a href="${url}" target="_blank" style="color:var(--accent-2); text-decoration:none; font-weight:600;"><i class="fas fa-external-link-alt"></i> Open PDF directly</a>
+          </div>
+        </div>`;
+    } else if (fileType === 'doc') {
+      const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+      docContainer.innerHTML = `<iframe src="${gviewUrl}" style="width:100%; height:100%; border:none; border-radius:8px;" title="Document Preview"></iframe>`;
+    } else {
+      docContainer.innerHTML = `
+        <div style="text-align:center; color:var(--text-secondary); padding:20px;">
+          <i class="fas fa-file-alt" style="font-size:3rem; margin-bottom:12px; color:var(--text-muted);"></i>
+          <p>Direct preview is not available for this file type.</p>
+          <a href="${url}" target="_blank" style="color:var(--accent-1); text-decoration:none; margin-top:10px; display:inline-block; font-weight:600;">
+            <i class="fas fa-external-link-alt"></i> Open in new tab
+          </a>
+        </div>`;
+    }
+  }, 400);
+
+  document.getElementById('previewModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePreviewModal() {
+  document.getElementById('previewModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('previewDocContainer').innerHTML = '';
+  if (currentPreviewBlobUrl) {
+    URL.revokeObjectURL(currentPreviewBlobUrl);
+    currentPreviewBlobUrl = null;
+  }
+}
+
+function renderCommentsList(paperId) {
+  const paper = fileData.find(p => p.id === paperId);
+  const list = document.getElementById('previewCommentsList');
+  const countBadge = document.getElementById('previewCommentsCount');
+
+  if (!paper) {
+    list.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.75rem;margin-top:20px;">Document missing</div>`;
+    countBadge.textContent = '0';
+    return;
+  }
+
+  const comments = paper.comments || [];
+  countBadge.textContent = comments.length;
+
+  if (comments.length === 0) {
+    list.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.75rem;margin-top:20px;padding:10px;">No comments yet.</div>`;
+    return;
+  }
+
+  const sorted = [...comments].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  list.innerHTML = sorted.map(c => {
+    const isMe = currentUser && c.userUid === currentUser.uid;
+    const timeStr = new Date(c.date).toLocaleDateString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    const initials = (c.userName || '?').substring(0, 1).toUpperCase();
+    return `
+      <div style="display:flex; gap:8px; align-items:flex-start; ${isMe ? 'flex-direction:row-reverse;' : ''}">
+        <div style="width:28px; height:28px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:800; color:#fff;
+          background:${isMe ? 'linear-gradient(135deg, var(--accent-1), var(--accent-2))' : 'rgba(255,255,255,0.1)'};
+          border:1px solid ${isMe ? 'rgba(181,142,255,0.3)' : 'var(--glass-border)'}; flex-shrink:0;">${initials}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px; ${isMe ? 'flex-direction:row-reverse;' : ''}">
+            <span style="font-size:0.7rem; font-weight:700; color:${isMe ? 'var(--accent-1)' : 'var(--text-secondary)'}; white-space:nowrap;">${escapeHtml(c.userName)}</span>
+            <span style="font-size:0.6rem; color:var(--text-muted);">${timeStr}</span>
+          </div>
+          <div style="background:${isMe ? 'linear-gradient(135deg, rgba(181,142,255,0.15), rgba(111,186,255,0.1))' : 'rgba(255,255,255,0.04)'};
+            border:1px solid ${isMe ? 'rgba(181,142,255,0.2)' : 'var(--glass-border)'};
+            padding:8px 12px; border-radius:${isMe ? '14px 4px 14px 14px' : '4px 14px 14px 14px'};
+            font-size:0.8rem; color:var(--text-primary); word-break:break-word; line-height:1.5;">${escapeHtml(c.text)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  setTimeout(() => { list.scrollTop = list.scrollHeight; }, 50);
+}
+
+async function postComment() {
+  if (!currentUser) {
+    showToast('warning', 'Login Required', 'Please login with Google first to write comments.');
+    return;
+  }
+
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !currentPreviewPaperId) return;
+
+  const paper = fileData.find(p => p.id === currentPreviewPaperId);
+  if (!paper) return;
+
+  input.value = '';
+  input.style.height = '36px';
+
+  const commentObj = {
+    id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    text: text,
+    userName: currentUser.displayName || 'Student',
+    userEmail: currentUser.email || '',
+    userUid: currentUser.uid,
+    date: new Date().toISOString()
+  };
+
+  try {
+    if (isFirebaseActive) {
+      await db.collection('papers').doc(currentPreviewPaperId).update({
+        comments: firebase.firestore.FieldValue.arrayUnion(commentObj)
+      });
+    } else {
+      if (!paper.comments) paper.comments = [];
+      paper.comments.push(commentObj);
+      renderCommentsList(currentPreviewPaperId);
+      renderPersonalDashboard();
+    }
+  } catch (err) {
+    console.error("Post comment error:", err);
+    showToast('error', 'Post Failed', err.message);
+  }
+}
+
+function handleCommentKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    postComment();
+  }
+}
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function escapeHtml(t) {
+  return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escapeAttr(t) {
+  return String(t||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function showToast(type, title, msg) {
+  const icons = { success:'fa-check-circle', error:'fa-times-circle', info:'fa-info-circle', warning:'fa-exclamation-triangle' };
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <i class="fas ${icons[type] || icons.info} toast-icon ${type}"></i>
+    <div class="toast-content"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>
+    <i class="fas fa-times toast-close" onclick="this.closest('.toast').remove()"></i>`;
+  document.getElementById('toastContainer').appendChild(toast);
+  setTimeout(() => { toast.classList.add('hide'); setTimeout(() => toast.remove(), 300); }, 5000);
+}
+
+// Theme
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon   = document.getElementById('themeIcon');
+let isDark = true;
+themeToggle.addEventListener('click', () => {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  themeIcon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+});
+</script>
+</body>
+</html>
