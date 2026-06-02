@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Quiz - QPHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+      --font-head: 'Outfit', sans-serif;
+      --bg-base: #06060c;
+      --bg-mesh: radial-gradient(circle at 15% 15%, #1d0c3d 0%, transparent 45%),
+                 radial-gradient(circle at 85% 15%, #0b1a4a 0%, transparent 45%),
+                 radial-gradient(circle at 50% 85%, #051d38 0%, transparent 50%),
+                 #06060c;
+      --glass-bg: rgba(10, 10, 22, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.12);
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.07);
+      --text-primary: #f8f7ff;
+      --text-secondary: rgba(248, 247, 255, 0.70);
+      --text-muted: rgba(248, 247, 255, 0.40);
+      --accent-1: #b58eff;
+      --accent-2: #6fbaff;
+      --accent-grad: linear-gradient(135deg, #b58eff, #6fbaff);
+      --accent-grad-glow: 0 0 20px rgba(181, 142, 255, 0.3);
+      --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.5);
+      --input-bg: rgba(255, 255, 255, 0.04);
+      --input-border: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(6, 6, 12, 0.8);
+      --success: #34d399;
+      --error: #fb7185;
+      --warning: #fbbf24;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-mesh);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 15px 5%;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 12px; text-decoration: none; color: white;
+    }
+    .logo-icon {
+      background: var(--accent-grad);
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.2rem;
+      box-shadow: var(--accent-grad-glow);
+    }
+    .logo-text h1 { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; }
+    .logo-text p { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+    nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 20px;
+      transition: color 0.3s;
+    }
+    nav a:hover, nav a.active { color: var(--text-primary); }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Title */
+    .section-title {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 30px;
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    select, button {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-family: var(--font-main);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    select {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-primary);
+      appearance: none;
+      cursor: pointer;
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--accent-1);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    select option { background: var(--bg-base); color: var(--text-primary); }
+
+    .btn-primary {
+      background: var(--accent-grad);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--accent-grad-glow);
+      margin-top: 10px;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(181, 142, 255, 0.5);
+    }
+    .btn-primary:disabled {
+      opacity: 0.7; cursor: not-allowed; transform: none;
+    }
+
+    /* Panels */
+    #setupPanel, #quizPanel, #resultPanel, #loadingPanel {
+      display: none;
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    #setupPanel.active, #quizPanel.active, #resultPanel.active, #loadingPanel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Quiz Panel specific */
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .q-number { font-weight: 600; color: var(--accent-2); }
+    .timer {
+      background: rgba(251, 113, 133, 0.15);
+      color: var(--error);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .question-text {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      margin-bottom: 25px;
+      font-weight: 500;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .option-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      text-align: left;
+      padding: 16px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .option-btn:hover {
+      background: var(--glass-hover);
+      border-color: var(--accent-1);
+    }
+    .option-btn.selected {
+      background: rgba(181, 142, 255, 0.15);
+      border-color: var(--accent-1);
+    }
+    .option-letter {
+      background: rgba(255,255,255,0.1);
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; justify-content: center; align-items: center;
+      font-weight: 600; font-size: 0.9rem;
+    }
+    .option-btn.selected .option-letter {
+      background: var(--accent-1);
+      color: #fff;
+    }
+
+    /* Result Panel */
+    .result-score {
+      font-size: 4rem;
+      font-family: var(--font-head);
+      font-weight: 800;
+      text-align: center;
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 20px 0;
+    }
+    .result-details {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+    }
+    .explanation-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .explanation-box h4 {
+      color: var(--accent-2);
+      margin-bottom: 10px;
+    }
+    .explanation-box .q-text { font-weight: 500; margin-bottom: 10px; }
+    .explanation-box .ans-text { color: var(--success); margin-bottom: 10px; }
+    .explanation-box .exp-text { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+
+    /* Loading Spinner */
+    .loader {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(181, 142, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--accent-1);
+      animation: spin 1s ease-in-out infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Warning Toast */
+    #warningToast {
+      position: fixed;
+      top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+      background: var(--error); color: white;
+      padding: 12px 24px; border-radius: 30px;
+      font-weight: 600; box-shadow: 0 10px 20px rgba(251, 113, 133, 0.3);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
+    }
+    #warningToast.show { transform: translateX(-50%) translateY(0); }
+
+  </style>
+</head>
+<body>
+
+  <div id="warningToast"><i class="fas fa-exclamation-triangle"></i> Anti-Cheat: Do not switch tabs!</div>
+
+  <!-- Header -->
+  <header>
+    <a href="index.html" class="logo">
+      <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div class="logo-text">
+        <h1>QPHub</h1>
+        <p>AI Quiz Engine</p>
+      </div>
+    </a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container">
+      
+      <!-- SETUP PANEL -->
+      <div id="setupPanel" class="active">
+        <h2 class="section-title">Configure Your AI Quiz</h2>
+        
+        <div class="form-group">
+          <label>Select Exam</label>
+          <select id="examSelect" onchange="updateSubjects()">
+            <option value="NIMCET">NIMCET</option>
+            <option value="BCA">BCA / University Exam</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Select Subject</label>
+          <select id="subjectSelect" onchange="updateChapters()"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Select Chapter</label>
+          <select id="chapterSelect"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Difficulty Level</label>
+          <select id="difficultySelect">
+            <option value="Basic">Basic</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+
+        <button class="btn-primary" id="startBtn" onclick="startQuiz()">
+          <i class="fas fa-play"></i> Start Quiz
+        </button>
+      </div>
+
+      <!-- LOADING PANEL -->
+      <div id="loadingPanel" style="text-align: center; padding: 40px 0;">
+        <div class="loader"></div>
+        <h3 style="color: var(--accent-1);">Generating AI Questions...</h3>
+        <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">
+          Our 15-year experienced AI professor is crafting your test based on PYQs.
+        </p>
+      </div>
+
+      <!-- QUIZ PANEL -->
+      <div id="quizPanel">
+        <div class="quiz-header">
+          <div class="q-number" id="qNumberDisplay">Question 1 of 5</div>
+          <div class="timer" id="timerDisplay"><i class="fas fa-clock"></i> 01:00</div>
+        </div>
+        
+        <div class="question-text" id="questionText">Loading question...</div>
+        
+        <div class="options-grid" id="optionsGrid">
+          <!-- Options will be injected here -->
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 30px;">
+          <button class="btn-primary" style="width: auto; padding: 12px 30px;" onclick="nextQuestion()" id="nextBtn">
+            Next <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- RESULT PANEL -->
+      <div id="resultPanel">
+        <h2 class="section-title">Quiz Completed!</h2>
+        <div class="result-score" id="finalScoreDisplay">0</div>
+        <div class="result-details">
+          <p>Scoring: +4 for Correct, -1 for Incorrect</p>
+          <p id="accuracyDisplay" style="margin-top: 5px; color: var(--accent-2); font-weight: 500;">Accuracy: 0%</p>
+        </div>
+        
+        <h3 style="margin-bottom: 15px; color: var(--text-primary); border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">AI Explanations</h3>
+        <div id="explanationsContainer" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+          <!-- Explanations injected here -->
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
+          <button class="btn-primary" style="background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border); box-shadow: none;" onclick="location.reload()">Take Another Quiz</button>
+          <button class="btn-primary" onclick="window.location.href='leaderboard.html'">View Leaderboard</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // --- Data Definitions based on Uploaded Images ---
+    const syllabus = {
+      "NIMCET": {
+        "Algebra": ["Set Theory", "Progression", "Binomial Theorem", "Determinant and Matrices", "Quadratic Equation", "Permutations and Combinations", "Probability", "Statistics"],
+        "Coordinate Geometry 2D": ["Rectangular Cartesian System", "Straight Lines", "Pair of Straight Lines", "Circle", "Conics"],
+        "Trigo": ["Trigonometric Ratios and Functions", "Trigonometric Equation", "Properties of Triangle", "Inverse Trigonometric Function"],
+        "Calculus": ["Function", "Limit", "Continuity and Differentiability", "Differentiation", "Indefinite Integrals"],
+        "Computer Basics": ["Organization of a Computer", "Central Processing Unit (CPU)", "Structure of Instructions in CPU", "Input/Output Devices", "Computer Memory"],
+        "Data Representation": ["Representation of Characters", "Binary Number System", "Hexadecimal Number System", "Binary Arithmetic", "Boolean Algebra"]
+      },
+      "BCA": {
+        "Programming in C": ["Data Types", "Control Structures", "Arrays", "Pointers", "Functions", "Structures"],
+        "Web Technologies": ["HTML & CSS", "JavaScript Basics", "DOM Manipulation"],
+        "Database Management": ["ER Models", "SQL Queries", "Normalization"]
+      }
+    };
+
+    // --- State Variables ---
+    const groqKey = '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';
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let correctCount = 0;
+    let incorrectCount = 0;
+    let selectedOption = null;
+    let userAnswers = [];
+    
+    // Timer Variables
+    let timerInterval;
+    let timeLeft = 60; // 60 seconds per question
+
+    // Anti-cheat
+    let cheatWarnings = 0;
+
+    // --- Initialization ---
+    window.onload = () => {
+      updateSubjects();
+      
+      // Anti-cheat: Visibility change listener
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && document.getElementById('quizPanel').classList.contains('active')) {
+          cheatWarnings++;
+          showWarningToast();
+          // Optional: Auto-submit question on cheat
+          // nextQuestion(true); 
+        }
+      });
+    };
+
+    function updateSubjects() {
+      const exam = document.getElementById('examSelect').value;
+      const subjectSelect = document.getElementById('subjectSelect');
+      subjectSelect.innerHTML = '';
+      
+      for (let subject in syllabus[exam]) {
+        let opt = document.createElement('option');
+        opt.value = subject;
+        opt.innerHTML = subject;
+        subjectSelect.appendChild(opt);
+      }
+      updateChapters();
+    }
+
+    function updateChapters() {
+      const exam = document.getElementById('examSelect').value;
+      const subject = document.getElementById('subjectSelect').value;
+      const chapterSelect = document.getElementById('chapterSelect');
+      chapterSelect.innerHTML = '';
+      
+      const chapters = syllabus[exam][subject] || [];
+      chapters.forEach(chap => {
+        let opt = document.createElement('option');
+        opt.value = chap;
+        opt.innerHTML = chap;
+        chapterSelect.appendChild(opt);
+      });
+    }
+
+    function showPanel(panelId) {
+      document.querySelectorAll('.container > div').forEach(div => div.classList.remove('active'));
+      document.getElementById(panelId).classList.add('active');
+    }
+
+    function showWarningToast() {
+      const toast = document.getElementById('warningToast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // --- AI Integration ---
+    async function startQuiz() {
+      const exam = document.getElementById('examSelect').value;
+      const subject = document.getElementById('subjectSelect').value;
+      const chapter = document.getElementById('chapterSelect').value;
+      const diff = document.getElementById('difficultySelect').value;
+
+      showPanel('loadingPanel');
+
+      const prompt = `Act as an expert professor with 15 years experience preparing students for the ${exam} exam. Create 5 multiple-choice questions for the subject "${subject}", specifically the chapter "${chapter}" at a "${diff}" difficulty level. 
+      CRITICAL INSTRUCTION: You must provide 100% mathematically and logically correct answers. Double-check all calculations. The questions must be based on previous year exam patterns.
+      Respond ONLY with a valid JSON array of objects. Do not include markdown code blocks, explanations outside the JSON, or any greetings. 
+      Format exactly like this:
+      [
+        {
+          "q": "Question text here?",
+          "options": ["Option A", "Option B", "Option C", "Option D"],
+          "answer": "Option B",
+          "explanation": "Step by step mathematical or logical solution proving why Option B is 100% correct."
+        }
+      ]`;
+
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile", // Most accurate model for reasoning/math
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.1
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData.error?.message || response.statusText || 'Unknown error';
+          throw new Error("API Request Failed (" + response.status + "): " + errMsg);
+        }
+
+        const data = await response.json();
+        let content = data.choices[0].message.content.trim();
+        
+        // Clean up markdown if the AI includes it by mistake
+        if (content.startsWith('```json')) content = content.replace(/```json/g, '').replace(/```/g, '');
+        if (content.startsWith('```')) content = content.replace(/```/g, '');
+        
+        questions = JSON.parse(content);
+        
+        if (!Array.isArray(questions) || questions.length === 0) throw new Error("Invalid format returned");
+
+        // Start the quiz UI
+        currentQuestionIndex = 0;
+        score = 0;
+        correctCount = 0;
+        incorrectCount = 0;
+        userAnswers = [];
+        showPanel('quizPanel');
+        loadQuestion();
+
+      } catch (err) {
+        console.error("Error fetching questions:", err);
+        alert("Failed to generate questions. Please try again. " + err.message);
+        showPanel('setupPanel');
+      }
+    }
+
+    // --- Quiz Logic ---
+    function loadQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        endQuiz();
+        return;
+      }
+
+      selectedOption = null;
+      document.getElementById('qNumberDisplay').innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+      
+      const q = questions[currentQuestionIndex];
+      document.getElementById('questionText').innerText = q.q;
+
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+      
+      const letters = ['A', 'B', 'C', 'D'];
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.innerHTML = `
+          <div class="option-letter">${letters[idx]}</div>
+          <div class="option-text">${opt}</div>
+        `;
+        btn.onclick = () => selectOption(btn, opt);
+        grid.appendChild(btn);
+      });
+
+      // Reset and start timer
+      timeLeft = 60;
+      updateTimerDisplay();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(timerTick, 1000);
+      
+      document.getElementById('nextBtn').innerText = currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next';
+    }
+
+    function selectOption(btnElement, optValue) {
+      document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+      btnElement.classList.add('selected');
+      selectedOption = optValue;
+    }
+
+    function timerTick() {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        nextQuestion(true); // Auto-submit due to timeout
+      }
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timerDisplay');
+      const secs = timeLeft < 10 ? '0' + timeLeft : timeLeft;
+      display.innerHTML = `<i class="fas fa-clock"></i> 00:${secs}`;
+      if (timeLeft <= 10) display.style.color = 'var(--error)';
+      else display.style.color = '';
+    }
+
+    function nextQuestion(isTimeout = false) {
+      clearInterval(timerInterval);
+      
+      const q = questions[currentQuestionIndex];
+      const isCorrect = selectedOption === q.answer;
+      
+      // Save answer state for explanations
+      userAnswers.push({
+        question: q.q,
+        correctAnswer: q.answer,
+        userAnswer: selectedOption || "Unanswered",
+        explanation: q.explanation,
+        isCorrect: isCorrect
+      });
+
+      // NIMCET Scoring System: +4 / -1
+      if (selectedOption) {
+        if (isCorrect) {
+          score += 4;
+          correctCount++;
+        } else {
+          score -= 1;
+          incorrectCount++;
+        }
+      }
+
+      currentQuestionIndex++;
+      loadQuestion();
+    }
+
+    function endQuiz() {
+      showPanel('resultPanel');
+      document.getElementById('finalScoreDisplay').innerText = score;
+      
+      const accuracy = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
+      document.getElementById('accuracyDisplay').innerText = `Accuracy: ${accuracy}% | Correct: ${correctCount} | Incorrect: ${incorrectCount}`;
+
+      // Render Explanations
+      const expContainer = document.getElementById('explanationsContainer');
+      expContainer.innerHTML = '';
+      
+      userAnswers.forEach((ans, idx) => {
+        const box = document.createElement('div');
+        box.className = 'explanation-box';
+        
+        const statusColor = ans.isCorrect ? 'var(--success)' : 'var(--error)';
+        const statusIcon = ans.isCorrect ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>';
+        
+        box.innerHTML = `
+          <h4>Q${idx + 1} <span style="float: right; color: ${statusColor}; font-size: 0.9rem;">${statusIcon} ${ans.isCorrect ? '+4' : (ans.userAnswer === 'Unanswered' ? '0' : '-1')}</span></h4>
+          <div class="q-text">${ans.question}</div>
+          <div style="font-size: 0.9rem; margin-bottom: 8px;">Your Answer: <span style="color: ${statusColor};">${ans.userAnswer}</span></div>
+          <div class="ans-text">Correct Answer: ${ans.correctAnswer}</div>
+          <div class="exp-text"><strong>Explanation:</strong> ${ans.explanation}</div>
+        `;
+        expContainer.appendChild(box);
+      });
+
+      // Save to Firebase (Pseudo-code as Firebase Auth state needs to be managed globally)
+      saveScoreToLeaderboard(score, accuracy);
+    }
+
+    // --- Firebase Integration ---
+    function saveScoreToLeaderboard(finalScore, accuracy) {
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        const user = firebase.auth().currentUser;
+        if (user) {
+          const db = firebase.firestore();
+          db.collection('quiz_scores').add({
+            userId: user.uid,
+            userName: user.displayName || 'Anonymous Student',
+            userEmail: user.email,
+            exam: document.getElementById('examSelect').value,
+            subject: document.getElementById('subjectSelect').value,
+            chapter: document.getElementById('chapterSelect').value,
+            difficulty: document.getElementById('difficultySelect').value,
+            score: finalScore,
+            accuracy: accuracy,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => {
+            console.log("Score saved to leaderboard!");
+          }).catch(err => {
+            console.error("Error saving score:", err);
+          });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
