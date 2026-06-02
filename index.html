@@ -1138,6 +1138,22 @@
     .file-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
   }
 </style>
+<!-- SECURITY: Anti-Inspect & Data Protection -->
+<script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', function(e) {
+    if(e.key === 'F12' || e.keyCode === 123) return e.preventDefault(), false;
+    if(e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) return e.preventDefault(), false;
+    if(e.ctrlKey && ['U','u'].includes(e.key)) return e.preventDefault(), false;
+  });
+  setInterval(function() {
+    const start = performance.now();
+    debugger;
+    if (performance.now() - start > 100) {
+      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20vh;'>Security Violation: DevTools Detected</h1>";
+    }
+  }, 1000);
+</script>
 </head>
 <body>
 
@@ -1192,6 +1208,7 @@
           <a href="profile.html" style="text-decoration: none;"><button><i class="fas fa-user-circle"></i> My Profile</button></a>
           <a href="leaderboard.html" style="text-decoration: none;"><button><i class="fas fa-trophy" style="color: #f59e0b;"></i> Leaderboard</button></a>
           <a href="quiz.html" style="text-decoration: none;"><button><i class="fas fa-brain" style="color: #b58eff;"></i> AI Quiz</button></a>
+          <a href="rankcard.html" style="text-decoration: none;"><button><i class="fas fa-id-badge" style="color: #6fbaff;"></i> My Rank Card</button></a>
           <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
@@ -1863,7 +1880,8 @@ function handleAuthStateChanged(user) {
     loginBtn.style.display = 'none';
     userProfile.style.display = 'flex';
     
-    document.getElementById('userAvatar').src = user.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
+    const customAvatar = localStorage.getItem('customAvatar_' + user.uid);
+    document.getElementById('userAvatar').src = customAvatar || user.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
     document.getElementById('userName').textContent = user.displayName || 'Student';
     document.getElementById('userEmail').textContent = user.email || '';
     

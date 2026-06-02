@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Rank Card | QPHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<!-- html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- Firebase Compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root {
+    --font-main: 'Plus Jakarta Sans', sans-serif;
+    --font-head: 'Space Grotesk', sans-serif;
+    --bg-base: #06060c;
+    --bg-mesh: radial-gradient(circle at 15% 15%, #1d0c3d 0%, transparent 45%),
+               radial-gradient(circle at 85% 15%, #0b1a4a 0%, transparent 45%),
+               radial-gradient(circle at 50% 85%, #051d38 0%, transparent 50%), #06060c;
+    --glass-bg: rgba(10, 10, 22, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-primary: #f8f7ff;
+    --text-secondary: rgba(248, 247, 255, 0.70);
+    --accent-grad: linear-gradient(135deg, #b58eff, #6fbaff);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-main);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: -1;
+    background: var(--bg-mesh);
+  }
+
+  /* HEADER */
+  header {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 10;
+    padding: 20px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .btn-back {
+    color: var(--text-primary); text-decoration: none; font-weight: 600;
+    background: var(--glass-bg); padding: 10px 20px; border-radius: 12px;
+    border: 1px solid var(--glass-border); display: flex; align-items: center; gap: 8px;
+  }
+
+  /* TOGGLE */
+  .toggle-container {
+    display: flex; gap: 10px; margin-bottom: 30px; margin-top: 80px;
+    background: var(--glass-bg); padding: 8px; border-radius: 16px;
+    border: 1px solid var(--glass-border);
+  }
+  .toggle-btn {
+    background: transparent; border: none; color: var(--text-secondary);
+    padding: 10px 24px; font-family: var(--font-main); font-weight: 700;
+    font-size: 0.9rem; border-radius: 12px; cursor: pointer; transition: all 0.3s;
+  }
+  .toggle-btn.active {
+    background: var(--accent-grad); color: white; box-shadow: 0 0 20px rgba(181, 142, 255, 0.3);
+  }
+
+  /* RANK CARD */
+  .card-wrapper {
+    perspective: 1000px;
+    margin-bottom: 30px;
+  }
+  .rank-card {
+    width: 340px; min-height: 480px;
+    background: linear-gradient(145deg, rgba(30, 20, 60, 0.9), rgba(10, 10, 30, 0.95));
+    border: 2px solid rgba(181, 142, 255, 0.3);
+    border-radius: 24px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 40px rgba(181, 142, 255, 0.1);
+    transform-style: preserve-3d;
+    transition: transform 0.1s;
+  }
+  /* Card Decorations */
+  .rank-card::before {
+    content: ''; position: absolute; top: -50px; left: -50px;
+    width: 150px; height: 150px; background: rgba(111, 186, 255, 0.3);
+    filter: blur(50px); border-radius: 50%;
+  }
+  .rank-card::after {
+    content: ''; position: absolute; bottom: -50px; right: -50px;
+    width: 150px; height: 150px; background: rgba(181, 142, 255, 0.3);
+    filter: blur(50px); border-radius: 50%;
+  }
+
+  .card-header {
+    text-align: center; margin-bottom: 25px; position: relative; z-index: 2;
+  }
+  .card-type {
+    font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 2px; color: #ff8ec2; margin-bottom: 5px;
+  }
+  .user-name {
+    font-family: var(--font-head); font-size: 1.8rem; font-weight: 800;
+  }
+
+  .rank-circle {
+    width: 140px; height: 140px; margin: 0 auto 25px;
+    border-radius: 50%; background: rgba(0,0,0,0.4);
+    border: 4px solid #b58eff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 0 30px rgba(181,142,255,0.4);
+    position: relative; z-index: 2;
+  }
+  .rank-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;}
+  .rank-value { font-family: var(--font-head); font-size: 3.5rem; font-weight: 800; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+
+  .stats-row {
+    display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px; position: relative; z-index: 2;
+  }
+  .stat-col { text-align: center; }
+  .stat-val { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; }
+  .stat-lbl { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;}
+
+  .ai-message {
+    margin-top: 25px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px;
+    font-size: 0.85rem; color: #fff; line-height: 1.5; font-style: italic;
+    border-left: 3px solid #6fbaff; display: none; position: relative; z-index: 2;
+  }
+  .ai-signature {
+    margin-top: 8px; font-weight: 700; color: #6fbaff; text-align: right; font-style: normal;
+  }
+
+  .watermark {
+    position: absolute; bottom: 15px; left: 0; width: 100%; text-align: center;
+    font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.2); letter-spacing: 2px;
+  }
+
+  /* ACTIONS */
+  .action-btns { display: flex; gap: 15px; margin-bottom: 50px; }
+  .btn-share {
+    background: var(--accent-grad); color: white; font-family: var(--font-main);
+    font-weight: 700; font-size: 1rem; padding: 15px 30px; border-radius: 16px;
+    border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(181, 142, 255, 0.4);
+    display: flex; align-items: center; gap: 10px; transition: transform 0.2s;
+  }
+  .btn-share:hover { transform: translateY(-3px); }
+
+  #loaderOverlay {
+    position: fixed; inset: 0; background: var(--bg-base); z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+</style>
+<!-- SECURITY: Anti-Inspect & Data Protection -->
+<script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', function(e) {
+    if(e.key === 'F12' || e.keyCode === 123) return e.preventDefault(), false;
+    if(e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) return e.preventDefault(), false;
+    if(e.ctrlKey && ['U','u'].includes(e.key)) return e.preventDefault(), false;
+  });
+  setInterval(function() {
+    const start = performance.now();
+    debugger;
+    if (performance.now() - start > 100) {
+      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20vh;'>Security Violation: DevTools Detected</h1>";
+    }
+  }, 1000);
+</script>
+</head>
+<body>
+
+<div id="loaderOverlay">
+  <div style="font-size: 3rem; color: var(--accent-1); margin-bottom: 20px;"><i class="fas fa-circle-notch fa-spin"></i></div>
+  <h2 style="font-family: var(--font-head);">Generating Rank Card...</h2>
+</div>
+
+<header>
+  <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Home</a>
+</header>
+
+<div class="toggle-container">
+  <button class="toggle-btn active" onclick="switchType('quiz')">Quiz Rank</button>
+  <button class="toggle-btn" onclick="switchType('uploader')">Distributor Rank</button>
+</div>
+
+<div class="card-wrapper" id="cardWrapper">
+  <div class="rank-card" id="rankCard">
+    <div class="card-header">
+      <div class="card-type" id="cardTypeLabel">Quiz Champion</div>
+      <img id="cardUserPhoto" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent-1); margin: 10px auto; display: block; object-fit: cover;" crossorigin="anonymous">
+      <div class="user-name" id="cardUserName">Loading...</div>
+    </div>
+    
+    <div class="rank-circle">
+      <div class="rank-label">Global Rank</div>
+      <div class="rank-value" id="cardRank">--</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-col">
+        <div class="stat-val" id="stat1Val">--</div>
+        <div class="stat-lbl" id="stat1Lbl">Score</div>
+      </div>
+      <div class="stat-col">
+        <div class="stat-val" id="stat2Val">--</div>
+        <div class="stat-lbl" id="stat2Lbl">Exams</div>
+      </div>
+    </div>
+
+    <div class="ai-message" id="aiMessageContainer">
+      <div id="aiMsgText">"Loading special message..."</div>
+      <div class="ai-signature">- Pratik Verma</div>
+    </div>
+
+    <div class="watermark">QPHUB ADVANCED</div>
+  </div>
+</div>
+
+<div class="action-btns">
+  <button class="btn-share" onclick="shareCard()"><i class="fas fa-share-nodes"></i> Share / Save Card</button>
+</div>
+
+<script>
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjNBGElikDMEdFuWsGeAfjo7cLHjCSnXU",
+    authDomain: "academic-hub-a70f1.firebaseapp.com",
+    projectId: "academic-hub-a70f1",
+    storageBucket: "academic-hub-a70f1.firebasestorage.app",
+    messagingSenderId: "76238913687",
+    appId: "1:76238913687:web:356b292bb690d8460269d2"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  
+  const GROQ_API_KEY = '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';
+
+  let currentUser = null;
+  let quizData = { rank: '--', score: 0, count: 0, top10: false };
+  let uploaderData = { rank: '--', uploads: 0, points: 0, top10: false };
+  let currentMode = 'quiz';
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('cardUserName').innerText = user.displayName || 'Anonymous Student';
+      
+      const customAvatar = localStorage.getItem('customAvatar_' + user.uid);
+      document.getElementById('cardUserPhoto').src = customAvatar || user.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
+      
+      fetchData();
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+
+  async function fetchData() {
+    try {
+      // 1. Fetch Quiz Rank
+      const quizSnap = await db.collection('quiz_scores').orderBy('score', 'desc').get();
+      let qRank = 1; let qFound = false;
+      let totalQScore = 0; let totalExams = 0;
+      
+      // Calculate total score and find best rank (or aggregate). We will use max score for rank.
+      const userBestScore = -1;
+      
+      quizSnap.forEach(doc => {
+        const d = doc.data();
+        if (d.userId === currentUser.uid) {
+           totalQScore += (d.score || 0);
+           totalExams++;
+        }
+      });
+      
+      // Real rank logic: group by userId and sum scores, then sort
+      let qUserMap = {};
+      quizSnap.forEach(doc => {
+        const d = doc.data();
+        if(d.userId) {
+          if(!qUserMap[d.userId]) qUserMap[d.userId] = 0;
+          qUserMap[d.userId] += (d.score || 0);
+        }
+      });
+      let qList = Object.keys(qUserMap).map(k => ({ id: k, score: qUserMap[k] })).sort((a,b) => b.score - a.score);
+      const myQIndex = qList.findIndex(u => u.id === currentUser.uid);
+      
+      if (myQIndex !== -1) {
+        quizData.rank = myQIndex + 1;
+        quizData.score = qList[myQIndex].score;
+        quizData.count = totalExams;
+        quizData.top10 = quizData.rank <= 10;
+      }
+
+      // 2. Fetch Uploader Rank
+      const paperSnap = await db.collection('papers').get();
+      let upMap = {};
+      paperSnap.forEach(doc => {
+        const d = doc.data();
+        const id = d.uploaderEmail || 'Anonymous';
+        if(!upMap[id]) upMap[id] = 0;
+        upMap[id]++;
+      });
+      let upList = Object.keys(upMap).map(k => ({ id: k, uploads: upMap[k] })).sort((a,b) => b.uploads - a.uploads);
+      const myUpIndex = upList.findIndex(u => u.id === currentUser.email);
+      
+      if (myUpIndex !== -1) {
+        uploaderData.rank = myUpIndex + 1;
+        uploaderData.uploads = upList[myUpIndex].uploads;
+        uploaderData.points = uploaderData.uploads * 10;
+        uploaderData.top10 = uploaderData.rank <= 10;
+      }
+
+      // Populate UI
+      updateUI();
+      document.getElementById('loaderOverlay').style.display = 'none';
+      
+    } catch (e) {
+      console.error(e);
+      alert("Error loading data.");
+    }
+  }
+
+  function switchType(type) {
+    currentMode = type;
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    updateUI();
+  }
+
+  function updateUI() {
+    const isQuiz = currentMode === 'quiz';
+    const data = isQuiz ? quizData : uploaderData;
+    
+    document.getElementById('cardTypeLabel').innerText = isQuiz ? 'Quiz Champion' : 'Distributor Elite';
+    document.getElementById('cardRank').innerText = data.rank !== '--' ? data.rank : '--';
+    
+    document.getElementById('stat1Lbl').innerText = isQuiz ? 'Total Score' : 'Points';
+    document.getElementById('stat1Val').innerText = isQuiz ? data.score : data.points;
+    
+    document.getElementById('stat2Lbl').innerText = isQuiz ? 'Exams Given' : 'Uploads';
+    document.getElementById('stat2Val').innerText = isQuiz ? data.count : data.uploads;
+
+    // AI Message Logic
+    const msgBox = document.getElementById('aiMessageContainer');
+    if (data.top10) {
+      msgBox.style.display = 'block';
+      document.getElementById('aiMsgText').innerText = "Loading special AI message...";
+      generateAIMessage(data.rank, isQuiz ? 'Quiz' : 'Paper Uploads');
+    } else {
+      msgBox.style.display = 'none';
+    }
+  }
+
+  async function generateAIMessage(rank, type) {
+    const prompt = `Write a very short (max 2 sentences) congratulatory message for a student who achieved Rank ${rank} globally in "${type}" on QPHub. Make it highly motivational. Do not include quotes, greetings, or signature.`;
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7
+        })
+      });
+      const d = await res.json();
+      let text = d.choices[0].message.content.trim();
+      document.getElementById('aiMsgText').innerText = `"${text}"`;
+    } catch(e) {
+      document.getElementById('aiMsgText').innerText = `"Outstanding performance! Keep pushing your limits and conquering the leaderboards!"`;
+    }
+  }
+
+  // Tilt Effect
+  const cardWrapper = document.getElementById('cardWrapper');
+  const card = document.getElementById('rankCard');
+  cardWrapper.addEventListener('mousemove', (e) => {
+    const rect = cardWrapper.getBoundingClientRect();
+    const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+    const centerX = rect.width / 2; const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -10;
+    const rotateY = ((x - centerX) / centerX) * 10;
+    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  });
+  cardWrapper.addEventListener('mouseleave', () => {
+    card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+  });
+
+  // Share Logic
+  async function shareCard() {
+    const oldTransform = card.style.transform;
+    card.style.transform = 'none'; // reset tilt for clear image
+    const btn = document.querySelector('.btn-share');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: '#0e0a1a', scale: 2 });
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], 'my_rank_card.jpg', { type: 'image/jpeg' });
+      
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'My QPHub Rank',
+          text: 'Check out my rank on QPHub!'
+        });
+      } else {
+        // Fallback to download if Web Share is not supported
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'my_rank_card.jpg';
+        a.click();
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Could not generate image.");
+    } finally {
+      card.style.transform = oldTransform;
+      btn.innerHTML = '<i class="fas fa-share-nodes"></i> Share / Save Card';
+    }
+  }
+</script>
+</body>
+</html>

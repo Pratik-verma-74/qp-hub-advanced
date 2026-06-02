@@ -304,6 +304,22 @@
     #warningToast.show { transform: translateX(-50%) translateY(0); }
 
   </style>
+<!-- SECURITY: Anti-Inspect & Data Protection -->
+<script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', function(e) {
+    if(e.key === 'F12' || e.keyCode === 123) return e.preventDefault(), false;
+    if(e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) return e.preventDefault(), false;
+    if(e.ctrlKey && ['U','u'].includes(e.key)) return e.preventDefault(), false;
+  });
+  setInterval(function() {
+    const start = performance.now();
+    debugger;
+    if (performance.now() - start > 100) {
+      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20vh;'>Security Violation: DevTools Detected</h1>";
+    }
+  }, 1000);
+</script>
 </head>
 <body>
 
@@ -417,6 +433,27 @@
   </main>
 
   <script>
+    // --- Firebase Initialization ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjNBGElikDMEdFuWsGeAfjo7cLHjCSnXU",
+      authDomain: "academic-hub-a70f1.firebaseapp.com",
+      projectId: "academic-hub-a70f1",
+      storageBucket: "academic-hub-a70f1.firebasestorage.app",
+      messagingSenderId: "76238913687",
+      appId: "1:76238913687:web:356b292bb690d8460269d2"
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    
+    // Auth Listener to ensure user is logged in
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        // Option to redirect or just log
+        console.warn("User not logged in. Scores will not be saved.");
+      }
+    });
+
     // --- Data Definitions based on Uploaded Images ---
     const syllabus = {
       "NIMCET": {
@@ -517,6 +554,7 @@
 
       const prompt = `Act as an expert professor with 15 years experience preparing students for the ${exam} exam. Create 5 multiple-choice questions for the subject "${subject}", specifically the chapter "${chapter}" at a "${diff}" difficulty level. 
       CRITICAL INSTRUCTION: You must provide 100% mathematically and logically correct answers. Double-check all calculations. The questions must be based on previous year exam patterns.
+      Ensure the questions are highly unique and completely different every time. (Random uniqueness seed: ${Math.random()})
       Respond ONLY with a valid JSON array of objects. Do not include markdown code blocks, explanations outside the JSON, or any greetings. 
       Format exactly like this:
       [
@@ -538,7 +576,7 @@
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile", // Most accurate model for reasoning/math
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.1
+            temperature: 0.4
           })
         });
 
