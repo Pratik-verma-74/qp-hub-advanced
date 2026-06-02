@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Leaderboard | Student Question Paper Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<!-- Firebase Compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+  /* ===== CSS VARIABLES (Copied from index.html) ===== */
+  :root {
+    --font-main: 'Plus Jakarta Sans', sans-serif;
+    --font-head: 'Outfit', 'Space Grotesk', sans-serif;
+    --bg-base: #06060c;
+    --bg-mesh: radial-gradient(circle at 15% 15%, #1d0c3d 0%, transparent 45%),
+               radial-gradient(circle at 85% 15%, #0b1a4a 0%, transparent 45%),
+               radial-gradient(circle at 50% 85%, #051d38 0%, transparent 50%),
+               #06060c;
+    --glass-bg: rgba(10, 10, 22, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-hover: rgba(255, 255, 255, 0.12);
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-border: rgba(255, 255, 255, 0.07);
+    --text-primary: #f8f7ff;
+    --text-secondary: rgba(248, 247, 255, 0.70);
+    --text-muted: rgba(248, 247, 255, 0.40);
+    --accent-1: #b58eff;
+    --accent-2: #6fbaff;
+    --accent-3: #ff8ec2;
+    --accent-grad: linear-gradient(135deg, #b58eff, #6fbaff);
+    --accent-grad-glow: 0 0 20px rgba(181, 142, 255, 0.3);
+    --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --header-bg: rgba(6, 6, 12, 0.8);
+  }
+
+  [data-theme="light"] {
+    --bg-base: #f4f6fb;
+    --bg-mesh: radial-gradient(circle at 15% 15%, #e6daff 0%, transparent 45%),
+               radial-gradient(circle at 85% 15%, #d1e4ff 0%, transparent 45%),
+               radial-gradient(circle at 50% 85%, #d4f0ff 0%, transparent 50%),
+               #f4f6fb;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(155, 109, 255, 0.15);
+    --glass-hover: rgba(155, 109, 255, 0.08);
+    --text-primary: #120a2e;
+    --text-secondary: rgba(18, 10, 46, 0.75);
+    --text-muted: rgba(18, 10, 46, 0.45);
+    --header-bg: rgba(244, 246, 251, 0.85);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body {
+    font-family: var(--font-main);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.4s, color 0.4s;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0;
+    background: var(--bg-mesh); pointer-events: none;
+  }
+
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--header-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 0 clamp(16px, 4vw, 40px);
+    height: 72px;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: background 0.4s;
+  }
+  .header-brand {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; color: inherit;
+  }
+  .brand-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--accent-grad);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #fff;
+    box-shadow: var(--accent-grad-glow);
+  }
+  .brand-title {
+    font-family: var(--font-head); font-size: 1.15rem; font-weight: 800;
+    background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .brand-sub { font-size: 0.68rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; }
+
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .btn-icon, .btn-link {
+    height: 40px; border-radius: 12px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    color: var(--text-secondary); font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; text-decoration: none;
+    font-family: var(--font-main); font-weight: 600; padding: 0 16px;
+  }
+  .btn-icon { width: 40px; padding: 0; }
+  .btn-icon:hover, .btn-link:hover { background: var(--glass-hover); color: var(--accent-1); }
+
+  /* ===== MAIN CONTENT ===== */
+  main { position: relative; z-index: 1; padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 40px); max-width: 900px; margin: 0 auto; }
+
+  .hero-strip {
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: clamp(24px, 4vw, 40px);
+    margin-bottom: 36px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-strip::before {
+    content: ''; position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(181,142,255,0.2), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-strip h1 {
+    font-family: var(--font-head);
+    font-size: clamp(2rem, 5vw, 3rem); font-weight: 800;
+    background: linear-gradient(135deg, #ff8ec2, #b58eff, #6fbaff);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .hero-strip p { color: var(--text-secondary); font-size: 1rem; max-width: 500px; margin: 0 auto; line-height: 1.6; }
+
+  /* ===== LEADERBOARD TABLE ===== */
+  .leaderboard-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-card);
+  }
+
+  .leaderboard-row {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--glass-border);
+    transition: background 0.2s;
+  }
+  .leaderboard-row:last-child { border-bottom: none; }
+  .leaderboard-row:hover { background: rgba(255,255,255,0.02); }
+  
+  .leaderboard-header {
+    background: rgba(181,142,255,0.08);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--accent-1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .leaderboard-header:hover { background: rgba(181,142,255,0.08); }
+
+  .col-rank { width: 60px; font-weight: 800; font-family: var(--font-head); font-size: 1.1rem; color: var(--text-muted); text-align: center; }
+  .col-user { flex: 1; display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .col-points { width: 120px; text-align: right; font-weight: 800; font-family: var(--font-head); font-size: 1.1rem; color: var(--accent-2); }
+  .col-uploads { width: 100px; text-align: right; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; }
+
+  .user-avatar {
+    width: 44px; height: 44px; border-radius: 14px;
+    background: var(--glass-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #fff; flex-shrink: 0;
+  }
+  .user-avatar.top-1 { background: linear-gradient(135deg, #f59e0b, #fbbf24); box-shadow: 0 0 20px rgba(245,158,11,0.3); }
+  .user-avatar.top-2 { background: linear-gradient(135deg, #9ca3af, #d1d5db); }
+  .user-avatar.top-3 { background: linear-gradient(135deg, #b45309, #d97706); }
+  
+  .user-info { display: flex; flex-direction: column; min-width: 0; }
+  .user-name { font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1rem; }
+  .user-badge {
+    font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 50px;
+    display: inline-block; margin-top: 4px; width: fit-content;
+  }
+  .badge-legendary { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-top { background: rgba(181,142,255,0.15); color: var(--accent-1); border: 1px solid rgba(181,142,255,0.3); }
+  .badge-expert { background: rgba(111,186,255,0.15); color: var(--accent-2); border: 1px solid rgba(111,186,255,0.3); }
+  .badge-helper { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+
+  .loader { text-align: center; padding: 40px; color: var(--text-muted); }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== RESPONSIVENESS ===== */
+  @media (max-width: 600px) {
+    .col-uploads { display: none; }
+    .leaderboard-row { padding: 12px 16px; }
+    .col-rank { width: 40px; font-size: 1rem; }
+    .user-avatar { width: 36px; height: 36px; font-size: 1rem; }
+    .user-name { font-size: 0.9rem; }
+    .col-points { font-size: 1rem; }
+    .brand-sub { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="header-brand" href="index.html">
+    <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <div class="brand-text">
+      <span class="brand-title">QPHub</span>
+      <span class="brand-sub">Question Paper Hub</span>
+    </div>
+  </a>
+  <div class="header-actions">
+    <button class="btn-icon" id="themeToggle" title="Toggle theme"><i class="fas fa-moon" id="themeIcon"></i></button>
+    <a href="index.html" class="btn-link"><i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Back to Home</a>
+  </div>
+</header>
+
+<main>
+  <div class="hero-strip glass">
+    <h1>Top Contributors 🏆</h1>
+    <p>Earn <strong>10 points</strong> for every paper you upload! Your contributions help thousands of students prepare for their exams.</p>
+  </div>
+
+  <div class="leaderboard-container">
+    <div class="leaderboard-row leaderboard-header">
+      <div class="col-rank">Rank</div>
+      <div class="col-user">Student</div>
+      <div class="col-uploads">Uploads</div>
+      <div class="col-points">Points</div>
+    </div>
+    
+    <div id="leaderboardList">
+      <div class="loader"><i class="fas fa-circle-notch spin" style="font-size: 2rem;"></i><br><br>Loading Leaderboard...</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // Setup Theme Toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  let currentTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+  themeToggle.addEventListener('click', () => {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('theme', currentTheme);
+    themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  });
+
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjNBGElikDMEdFuWsGeAfjo7cLHjCSnXU",
+    authDomain: "academic-hub-a70f1.firebaseapp.com",
+    projectId: "academic-hub-a70f1",
+    storageBucket: "academic-hub-a70f1.firebasestorage.app",
+    messagingSenderId: "76238913687",
+    appId: "1:76238913687:web:356b292bb690d8460269d2"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Badge Logic
+  function getBadgeInfo(count) {
+    if (count >= 50) return { title: '👑 Legendary Contributor', cls: 'badge-legendary' };
+    if (count >= 20) return { title: '🌟 Top Contributor', cls: 'badge-top' };
+    if (count >= 10) return { title: '🎓 Course Expert', cls: 'badge-expert' };
+    if (count >= 1)  return { title: '🤝 Helping Hand', cls: 'badge-helper' };
+    return null;
+  }
+
+  // Load Data
+  db.collection('papers').get().then(snapshot => {
+    const userMap = {};
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // Use email as unique identifier if available, fallback to uploaderName
+      const id = data.uploaderEmail || data.uploaderName || 'Anonymous';
+      const name = data.uploaderName || 'Anonymous User';
+      
+      if (!userMap[id]) {
+        userMap[id] = { name: name, uploads: 0, email: data.uploaderEmail || '' };
+      }
+      userMap[id].uploads++;
+    });
+
+    // Calculate points (10 points per upload) and convert to array
+    const users = Object.values(userMap).map(u => ({
+      ...u,
+      points: u.uploads * 10
+    }));
+
+    // Sort by points descending
+    users.sort((a, b) => b.points - a.points);
+
+    // Filter out anonymous or 0 points if needed, but here we show all who uploaded
+    const validUsers = users.filter(u => u.uploads > 0 && u.name !== 'Anonymous' && u.name !== 'Anonymous User');
+
+    const list = document.getElementById('leaderboardList');
+    
+    if (validUsers.length === 0) {
+      list.innerHTML = '<div class="loader">No contributors yet! Be the first to upload.</div>';
+      return;
+    }
+
+    list.innerHTML = validUsers.map((user, index) => {
+      const rank = index + 1;
+      let avatarCls = '';
+      let avatarContent = `<i class="fas fa-user"></i>`;
+      
+      if (rank === 1) { avatarCls = 'top-1'; avatarContent = '🥇'; }
+      else if (rank === 2) { avatarCls = 'top-2'; avatarContent = '🥈'; }
+      else if (rank === 3) { avatarCls = 'top-3'; avatarContent = '🥉'; }
+      else { avatarContent = user.name.charAt(0).toUpperCase(); }
+
+      const badge = getBadgeInfo(user.uploads);
+      const badgeHtml = badge ? `<div class="user-badge ${badge.cls}">${badge.title}</div>` : '';
+
+      return `
+        <div class="leaderboard-row">
+          <div class="col-rank">#${rank}</div>
+          <div class="col-user">
+            <div class="user-avatar ${avatarCls}">${avatarContent}</div>
+            <div class="user-info">
+              <div class="user-name">${user.name}</div>
+              ${badgeHtml}
+            </div>
+          </div>
+          <div class="col-uploads">${user.uploads} papers</div>
+          <div class="col-points">${user.points.toLocaleString()} pts</div>
+        </div>
+      `;
+    }).join('');
+
+  }).catch(err => {
+    console.error("Error fetching leaderboard data:", err);
+    document.getElementById('leaderboardList').innerHTML = `<div class="loader" style="color:#fb7185"><i class="fas fa-exclamation-triangle"></i> Failed to load leaderboard data.</div>`;
+  });
+
+</script>
+</body>
+</html>
