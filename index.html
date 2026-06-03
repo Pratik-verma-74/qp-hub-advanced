@@ -20,34 +20,34 @@
   :root {
     --font-main: 'Plus Jakarta Sans', sans-serif;
     --font-head: 'Outfit', sans-serif;
-    --bg-base: #06060c;
-    --bg-mesh: radial-gradient(circle at 15% 15%, #1d0c3d 0%, transparent 45%),
-               radial-gradient(circle at 85% 15%, #0b1a4a 0%, transparent 45%),
-               radial-gradient(circle at 50% 85%, #051d38 0%, transparent 50%),
-               #06060c;
-    --glass-bg: rgba(10, 10, 22, 0.55);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-hover: rgba(255, 255, 255, 0.12);
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --card-border: rgba(255, 255, 255, 0.07);
+    --bg-base: #0a0c1a;
+    --bg-mesh: radial-gradient(circle at 15% 15%, #11142e 0%, transparent 45%),
+               radial-gradient(circle at 85% 15%, #0b112c 0%, transparent 45%),
+               radial-gradient(circle at 50% 85%, #0a0d24 0%, transparent 50%),
+               #0a0c1a;
+    --glass-bg: #10132b;
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-hover: #161a36;
+    --card-bg: #121530;
+    --card-border: rgba(255, 255, 255, 0.04);
     --text-primary: #f8f7ff;
-    --text-secondary: rgba(248, 247, 255, 0.70);
+    --text-secondary: rgba(248, 247, 255, 0.65);
     --text-muted: rgba(248, 247, 255, 0.40);
-    --accent-1: #b58eff;
-    --accent-2: #6fbaff;
+    --accent-1: #a755ff;
+    --accent-2: #4a90e2;
     --accent-3: #ff8ec2;
-    --accent-grad: linear-gradient(135deg, #b58eff, #6fbaff);
-    --accent-grad-glow: 0 0 20px rgba(181, 142, 255, 0.3);
-    --accent-grad2: linear-gradient(135deg, #ff8ec2, #b58eff);
-    --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.5);
-    --shadow-glow: 0 0 35px rgba(181, 142, 255, 0.15);
-    --input-bg: rgba(255, 255, 255, 0.04);
-    --input-border: rgba(255, 255, 255, 0.1);
+    --accent-grad: linear-gradient(135deg, #b066ff, #5aa0ff);
+    --accent-grad-glow: 0 0 20px rgba(176, 102, 255, 0.2);
+    --accent-grad2: linear-gradient(135deg, #ff8ec2, #b066ff);
+    --shadow-card: 0 12px 30px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 35px rgba(176, 102, 255, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.03);
+    --input-border: rgba(255, 255, 255, 0.08);
     --scrollbar-track: rgba(255, 255, 255, 0.02);
-    --scrollbar-thumb: rgba(181, 142, 255, 0.3);
+    --scrollbar-thumb: rgba(176, 102, 255, 0.3);
     --toast-bg: rgba(10, 8, 25, 0.95);
-    --header-bg: rgba(6, 6, 12, 0.8);
-    --modal-bg: rgba(8, 7, 20, 0.98);
+    --header-bg: #0a0c1a;
+    --modal-bg: #0b0d1e;
     --success: #34d399;
     --error: #fb7185;
     --warning: #fbbf24;
@@ -1137,6 +1137,53 @@
   @media (min-width: 1200px) {
     .file-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
   }
+  /* NEW MOBILE UI STYLES */
+  .hero-card { background: linear-gradient(160deg, #13173a, #0b0e22); border-radius: 20px; padding: 24px; position: relative; overflow: hidden; margin-bottom: 24px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-card); }
+  .hero-card h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
+  .hero-card p.sub { font-size: 0.8rem; color: var(--text-secondary); max-width: 60%; line-height: 1.5; }
+  .hero-notice { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin-top: 16px; font-size: 0.75rem; color: var(--text-secondary); width: 80%; border: 1px solid rgba(255,255,255,0.05); }
+  .hero-books-img { position: absolute; right: -10px; top: 10px; width: 140px; pointer-events: none; }
+  .action-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; text-align: center; }
+  .action-btn-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; border: none; background: transparent; cursor: pointer; }
+  .action-icon-box { width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s; }
+  .action-btn-item:hover .action-icon-box { transform: translateY(-4px); }
+  .icon-quiz { background: linear-gradient(135deg, #d37aff, #a355ff); }
+  .icon-papers { background: linear-gradient(135deg, #6aaeff, #3582ff); }
+  .icon-groups { background: linear-gradient(135deg, #ff9f4a, #ff6a00); }
+  .icon-upload { background: linear-gradient(135deg, #c07aff, #8b3dff); }
+  .action-label { font-size: 0.7rem; color: var(--text-primary); font-weight: 500; }
+  .filter-btns-row { display: flex; gap: 12px; margin-bottom: 24px; }
+  .filter-btn-new { flex: 1; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 14px; padding: 12px 16px; color: var(--text-primary); font-size: 0.85rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer; appearance: none; outline: none; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #060913; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 0.65rem; font-weight: 500; cursor: pointer; border:none; background:transparent;}
+  .nav-item.active { color: var(--accent-1); }
+  .nav-item i { font-size: 1.2rem; }
+  .nav-indicator { width: 40px; height: 4px; background: var(--accent-1); border-radius: 4px 4px 0 0; position: absolute; bottom: 0; }
+  .new-file-card { background: #12152e; border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; box-shadow: var(--shadow-card); }
+  .nfc-top { display: flex; gap: 12px; align-items: flex-start; }
+  .nfc-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; flex-shrink: 0; }
+  .nfc-icon.pdf { background: #ff4757; }
+  .nfc-icon.img { background: #2ed573; }
+  .nfc-icon.doc { background: #1e90ff; }
+  .nfc-info { flex: 1; min-width: 0; }
+  .nfc-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color:var(--text-primary); }
+  .nfc-meta-row { display: flex; gap: 12px; font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px; flex-wrap: wrap; }
+  .nfc-meta-item { display: flex; align-items: center; gap: 4px; }
+  .nfc-tags { display: flex; gap: 6px; margin-top: 6px; }
+  .nfc-tag { font-size: 0.6rem; padding: 4px 8px; border-radius: 50px; font-weight: 600; }
+  .tag-purple { background: rgba(167, 85, 255, 0.15); color: #c48cff; border: 1px solid rgba(167,85,255,0.3); }
+  .tag-blue { background: rgba(74, 144, 226, 0.15); color: #7cb5f9; border: 1px solid rgba(74,144,226,0.3); }
+  .tag-orange { background: rgba(255, 159, 74, 0.15); color: #ffb87a; border: 1px solid rgba(255,159,74,0.3); }
+  .nfc-bottom { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+  .nfc-btn { flex: 1; padding: 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
+  .btn-dark { background: var(--glass-bg); color: white; border: 1px solid var(--glass-border); }
+  .btn-gradient { background: var(--accent-grad); color: white; box-shadow: 0 4px 15px rgba(167,85,255,0.3); }
+  .btn-icon-sq { width: 40px; height: 40px; border-radius: 10px; background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; }
+  .btn-icon-sq.danger { color: #ff4757; background: rgba(255,71,87,0.05); border-color: rgba(255,71,87,0.2); }
+  .sec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .sec-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .badge-count { background: rgba(167,85,255,0.2); color: #c48cff; padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; }
+  main { padding-bottom: 90px; }
 </style>
 <!-- SECURITY: Anti-Inspect & Data Protection -->
 <script>
@@ -1158,49 +1205,24 @@
 <body>
 
 <!-- ===== HEADER ===== -->
-<header>
-  <a class="header-brand" href="#top">
-    <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
-    <div class="brand-text">
+<header style="padding: 10px 20px; display: flex; justify-content: space-between; border-bottom: none; background: transparent;">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <i class="fas fa-bars" style="font-size: 1.2rem; color: var(--text-primary); cursor: pointer;"></i>
+    <a class="header-brand" href="#top" style="gap: 8px; margin: 0;">
+      <div class="brand-icon" style="width: 36px; height: 36px; border-radius: 10px;"><i class="fas fa-graduation-cap" style="font-size: 16px;"></i></div>
       <span class="brand-title">QPHub</span>
-      <span class="brand-sub">Question Paper Hub</span>
-    </div>
-  </a>
-  <div class="header-search" id="headerSearch">
-    <i class="fas fa-search search-icon"></i>
-    <input type="text" id="searchInput" placeholder="Search by subject, year, course…" autocomplete="off" />
-    <i class="fas fa-times clear-search" id="clearSearch" title="Clear"></i>
+    </a>
   </div>
   <div class="header-actions">
-    <button class="btn-icon" id="themeToggle" title="Toggle theme"><i class="fas fa-moon" id="themeIcon"></i></button>
-    
-    <!-- Admin Dashboard Button -->
-    <button class="btn-icon" id="adminPanelBtn" onclick="openAdminPanel()" title="Admin Dashboard" style="display: none; border-color: var(--accent-3); color: var(--accent-3); position: relative;">
-      <i class="fas fa-user-shield"></i>
-    </button>
-
-    <!-- Leaderboard Button -->
-    <a href="leaderboard.html" style="text-decoration: none;">
-      <button class="btn-icon" title="Leaderboard" style="color: #f59e0b; border-color: rgba(245,158,11,0.25);">
-        <i class="fas fa-trophy"></i>
-      </button>
-    </a>
-
-    <!-- Upload Button -->
-    <button class="btn-upload-header ripple-container" id="uploadHeaderBtn" onclick="checkLoginAndOpenModal()">
-      <i class="fas fa-cloud-upload-alt"></i>
-      <span>Upload</span>
-    </button>
-
-    <!-- Authentication Area -->
+    <button class="btn-icon" onclick="document.getElementById('searchInput').focus()" style="background: transparent; border: none; font-size: 1.1rem;"><i class="fas fa-search"></i></button>
+    <button class="btn-icon" id="themeToggle" title="Toggle theme" style="background: transparent; border: none; font-size: 1.1rem;"><i class="fas fa-moon" id="themeIcon"></i></button>
+    <button class="btn-icon" id="adminPanelBtn" onclick="openAdminPanel()" title="Admin Dashboard" style="display: none; background: transparent; border: none; font-size: 1.1rem; color: var(--accent-3);"><i class="fas fa-user-shield"></i></button>
+    <a href="leaderboard.html" style="text-decoration: none;"><button class="btn-icon" title="Leaderboard" style="background: transparent; border: none; color: #f59e0b; font-size: 1.1rem;"><i class="fas fa-trophy"></i></button></a>
     <div id="authContainer" style="display: flex; align-items: center; position: relative;">
-      <button class="btn-upload-header ripple-container" id="loginBtn" onclick="loginWithGoogle()" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none; padding: 9px 14px;">
-        <i class="fab fa-google" style="color: #4285F4; margin-right: 4px;"></i>
-        <span>Login</span>
-      </button>
-      <div id="userProfile" style="display: none; align-items: center; gap: 8px; cursor: pointer; position: relative;">
-        <img id="userAvatar" src="" alt="User Avatar" style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent-1); object-fit: cover;" onclick="toggleAuthDropdown(event)" />
-        <div id="authDropdown" class="card-dropdown" style="right: 0; top: 46px; min-width: 180px; text-align: left;">
+      <button class="btn-upload-header ripple-container" id="loginBtn" onclick="loginWithGoogle()" style="display:none; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none; padding: 6px 12px; font-size: 0.8rem;"><i class="fab fa-google" style="color: #4285F4; margin-right: 4px;"></i><span>Login</span></button>
+      <div id="userProfile" style="display: flex; align-items: center; cursor: pointer; position: relative; margin-left: 4px;">
+        <img id="userAvatar" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="User Avatar" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent-1); object-fit: cover;" onclick="toggleAuthDropdown(event)" />
+        <div id="authDropdown" class="card-dropdown" style="right: 0; top: 46px; min-width: 180px; text-align: left; display: none;">
           <div style="padding: 10px 12px; border-bottom: 1px solid var(--glass-border); font-size: 0.78rem;">
             <div id="userName" style="font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 156px;"></div>
             <div id="userEmail" style="color: var(--text-muted); font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 156px;"></div>
@@ -1216,72 +1238,80 @@
   </div>
 </header>
 
+<!-- Hidden Search Bar (Toggled by Search Icon) -->
+<div class="header-search" id="headerSearch" style="display: none; padding: 0 20px 15px;">
+  <i class="fas fa-search search-icon" style="left: 36px;"></i>
+  <input type="text" id="searchInput" placeholder="Search by subject, year, course…" autocomplete="off" style="width: 100%; border-radius: 12px; padding: 12px 16px 12px 42px; background: var(--glass-bg);" />
+  <i class="fas fa-times clear-search" id="clearSearch" title="Clear" style="right: 36px;"></i>
+</div>
+<script>
+  document.querySelector('.fa-search').parentElement.onclick = () => {
+    const s = document.getElementById('headerSearch');
+    s.style.display = s.style.display === 'none' ? 'block' : 'none';
+    if(s.style.display === 'block') document.getElementById('searchInput').focus();
+  };
+</script>
+
 <!-- ===== MAIN ===== -->
 <main id="top">
 
-  <!-- Hero -->
-  <div class="hero-strip glass">
-    <div class="hero-text">
-      <h1>Student Question Paper Hub</h1>
-      <p>Upload, search and download previous year question papers for all courses — all in one smart, student-friendly platform.</p>
+  <!-- Hero Card -->
+  <div class="hero-card">
+    <h1 style="color: #fff;">Student Question<br>Paper <span style="color: var(--accent-2);">Hub</span></h1>
+    <p class="sub">Upload, search and download previous year question papers for all courses — all in one smart, student-friendly platform.</p>
+    <div class="hero-notice">
+      <i class="fas fa-bullhorn" style="color: var(--accent-1);"></i> Before uploading, check for duplicates. Share your previous year papers — your upload helps other students! 🙏<br>
+      <div style="text-align: right; margin-top: 4px;">— Pratik Verma</div>
     </div>
-    <div class="hero-stats">
-      <div class="stat-item">
-        <div class="stat-num" id="statFiles">0</div>
-        <div class="stat-label">Papers</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" id="statCourses">0</div>
-        <div class="stat-label">Courses</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" id="statYears">0</div>
-        <div class="stat-label">Years</div>
-      </div>
-    </div>
-    <div class="notice-box glass">
-      <h3>📢 Notice</h3>
-      <p>Before uploading, check for duplicates. Share your previous year papers — your upload helps other students! 🙏</p>
-      <p class="signature">— Pratik Verma</p>
-    </div>
+    <!-- Book Illustration Placeholder (could be image) -->
+    <img src="https://cdn3d.iconscout.com/3d/premium/thumb/graduation-books-5401948-4521404.png" class="hero-books-img" alt="Books" onerror="this.style.display='none'" />
   </div>
 
-  <!-- Filter + View Toggle bar -->
-  <div class="filter-bar">
-    <select class="filter-select" id="filterCourse">
+  <!-- Filters Row -->
+  <div class="filter-btns-row">
+    <select class="filter-btn-new" id="filterCourse">
       <option value="">All Courses</option>
       <option value="BCA">BCA</option>
       <option value="BBA">BBA</option>
       <option value="Biotechnology">Biotechnology</option>
       <option value="NCC">NCC</option>
     </select>
-    <select class="filter-select" id="filterYear">
+    <select class="filter-btn-new" id="filterYear">
       <option value="">All Years</option>
     </select>
-    <button class="filter-clear" onclick="clearFilters()"><i class="fas fa-times"></i> Clear</button>
-    <button class="btn-download" onclick="window.location.href='quiz.html'" style="padding: 8px 16px; margin-left: 10px; background: var(--accent-grad); color: white; border-radius: 8px; border: none; cursor: pointer; box-shadow: var(--accent-grad-glow); font-weight: 600;">
-      <i class="fas fa-brain"></i> Play AI Quiz
+  </div>
+  <div class="filter-results" id="filterResults" style="display:none;">Showing 0 papers</div>
+
+  <!-- Action Grid (4 buttons) -->
+  <div class="action-grid-4">
+    <button class="action-btn-item" onclick="window.location.href='quiz.html'">
+      <div class="action-icon-box icon-quiz"><i class="fas fa-robot"></i></div>
+      <div class="action-label">AI Quiz</div>
     </button>
-    <div class="filter-results" id="filterResults">Showing 0 papers</div>
-    <!-- ✅ View mode toggle -->
-    <div class="view-toggle">
-      <button class="view-btn active" id="viewAll" onclick="switchView('all')">
-        <i class="fas fa-th-large"></i> All Papers
-      </button>
-      <button class="view-btn" id="viewGroups" onclick="switchView('groups')">
-        <i class="fas fa-layer-group"></i> Groups
-      </button>
-    </div>
+    <button class="action-btn-item" onclick="switchView('all')">
+      <div class="action-icon-box icon-papers"><i class="fas fa-th-large"></i></div>
+      <div class="action-label">All Papers</div>
+    </button>
+    <button class="action-btn-item" onclick="switchView('groups')">
+      <div class="action-icon-box icon-groups"><i class="fas fa-layer-group"></i></div>
+      <div class="action-label">Groups</div>
+    </button>
+    <button class="action-btn-item" onclick="checkLoginAndOpenModal()">
+      <div class="action-icon-box icon-upload"><i class="fas fa-plus"></i></div>
+      <div class="action-label">Upload Paper</div>
+    </button>
   </div>
 
   <!-- Papers Section Header -->
-  <div class="section-header">
-    <div class="section-title">
-      <i class="fas fa-file-pdf" style="color:var(--accent-1)"></i>
-      Question Papers
-      <span class="title-badge" id="fileCountBadge">0</span>
+  <div class="sec-header">
+    <div class="sec-title">
+      <i class="fas fa-file-alt" style="color: var(--accent-1); font-size: 1.2rem;"></i> Question Papers 
+      <span class="badge-count"><span id="fileCountBadge">0</span> Papers</span>
     </div>
-    <div class="section-line"></div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-icon-sq" style="background: var(--glass-bg); color: white;" onclick="switchView('all')"><i class="fas fa-th-large"></i></button>
+      <button class="btn-icon-sq" onclick="switchView('groups')"><i class="fas fa-list"></i></button>
+    </div>
   </div>
 
   <!-- ✅ ALL PAPERS VIEW (flat grid with search/filter) -->
@@ -1412,7 +1442,7 @@
 <div class="glass" style="max-width: 1200px; margin: 40px auto; padding: 40px; border-radius: 24px; text-align: center; border: 1px solid var(--accent-1); position: relative; overflow: hidden; box-shadow: var(--shadow-glow);">
   <div style="position: absolute; top: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, var(--accent-1), transparent 70%); opacity: 0.2; filter: blur(30px);"></div>
   <div style="position: absolute; bottom: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, var(--accent-2), transparent 70%); opacity: 0.2; filter: blur(30px);"></div>
-  <h2 style="font-family: var(--font-head); font-size: 2.2rem; font-weight: 800; margin-bottom: 15px; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; position: relative; z-index: 1;">Challenge Yourself with AI Quiz</h2>
+  <h2 style="font-family: var(--font-head); font-size: 2.2rem; font-weight: 800; margin-bottom: 15px; background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; position: relative; z-index: 1;">Challenge Yourself with AI Quiz</h2>
   <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; position: relative; z-index: 1;">Prepare for NIMCET & BCA with dynamic, PYQ-based questions generated by a 15-year experienced AI professor. Track your score and beat the leaderboard!</p>
   <button onclick="window.location.href='quiz.html'" style="padding: 16px 40px; font-size: 1.2rem; font-family: var(--font-main); font-weight: 700; background: var(--accent-grad); color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: var(--accent-grad-glow); transition: transform 0.3s; position: relative; z-index: 1;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
     <i class="fas fa-play-circle"></i> Play AI Quiz Now
@@ -2820,7 +2850,7 @@ function buildCard(f, idx) {
     : '';
 
   const footerDeleteBtn = isAdmin
-    ? `<button class="btn-delete-card" onclick="deleteFile('${f.id}')" title="Delete Paper"><i class="fas fa-trash-alt"></i></button>`
+    ? `<button class="btn-icon-sq danger" onclick="deleteFile('${f.id}')" title="Delete Paper"><i class="fas fa-trash-alt"></i></button>`
     : '';
 
   const trophy = getTrophy(f.likesCount || 0);
@@ -2836,21 +2866,29 @@ function buildCard(f, idx) {
   const heartClass = isLiked ? 'fas fa-heart' : 'far fa-heart';
   
   const likeBtn = `
-    <button class="mini-btn like-btn" onclick="toggleLike('${f.id}', event)" title="Like paper"
-      style="color:${heartColor}; border-color:${isLiked ? 'rgba(255,71,87,0.4)' : 'var(--glass-border)'}; background:${isLiked ? 'rgba(255,71,87,0.12)' : 'var(--glass-bg)'};
-      width:40px; height:40px; border-radius:12px; border:1px solid; display:flex; align-items:center; justify-content:center;
-      cursor:pointer; transition:all 0.2s; flex-direction:column; gap:1px; flex-shrink:0;">
-      <i class="${heartClass}" style="font-size:0.9rem;"></i>
-      <span style="font-size:0.6rem; font-weight:800; color:inherit; line-height:1;">${f.likesCount || 0}</span>
+    <button class="btn-icon-sq" onclick="toggleLike('${f.id}', event)" title="Like paper"
+      style="color:${heartColor}; border-color:${isLiked ? 'rgba(255,71,87,0.4)' : 'var(--glass-border)'}; background:${isLiked ? 'rgba(255,71,87,0.12)' : 'transparent'};">
+      <i class="${heartClass}"></i>
     </button>
   `;
 
   return `
-    <div class="file-card" style="animation-delay:${delay}s" id="card-${f.id}">
-      ${thumbHtml}
-      <div class="card-top">
-        <div class="card-pdf-icon ${iconCls}"><i class="fas ${iconFa}"></i></div>
-        ${trophyBadge}
+    <div class="new-file-card" style="animation-delay:${delay}s" id="card-${f.id}">
+      <div class="nfc-top">
+        <div class="nfc-icon ${iconCls}"><i class="fas ${iconFa}"></i></div>
+        <div class="nfc-info">
+          <div class="nfc-title" title="${safeName}">${safeName}</div>
+          <div class="nfc-meta-row">
+            <div class="nfc-meta-item"><i class="fas fa-graduation-cap" style="color:var(--accent-1)"></i> ${f.course || ''}</div>
+            <div class="nfc-meta-item"><i class="fas fa-book" style="color:var(--accent-1)"></i> ${f.subject || ''}</div>
+            <div class="nfc-meta-item"><i class="fas fa-university" style="color:var(--accent-1)"></i> ${f.university || 'BNMU'}</div>
+          </div>
+          <div class="nfc-meta-row">
+            <div class="nfc-meta-item"><i class="fas fa-calendar-alt" style="color:var(--accent-1)"></i> ${f.year || ''}</div>
+            ${f.size ? `<div class="nfc-meta-item"><i class="fas fa-weight-hanging" style="color:var(--accent-1)"></i> ${f.size}</div>` : ''}
+            <div class="nfc-meta-item"><i class="fas fa-download" style="color:var(--accent-1)"></i> ${f.downloads || '0'}</div>
+          </div>
+        </div>
         <div class="card-menu" id="menu-${f.id}">
           <button class="card-menu-btn" onclick="toggleCardMenu('${f.id}',event)">
             <i class="fas fa-ellipsis-v"></i>
@@ -2862,30 +2900,18 @@ function buildCard(f, idx) {
             <button onclick="shareFile('${safeUrl}','${safeName}','whatsapp')" style="color:#25d366;"><i class="fab fa-whatsapp"></i> Share on WhatsApp</button>
             <button onclick="shareFile('${safeUrl}','${safeName}','email')"><i class="fas fa-envelope"></i> Share via Email</button>
             ${grp ? `<button onclick="downloadGroupAsZip('${grp.id}')"><i class="fas fa-file-archive"></i> Download Group ZIP</button>` : ''}
-            ${dropdownDeleteBtn}
+            ${isAdmin ? `<button class="danger" onclick="deleteFile('${f.id}')"><i class="fas fa-trash"></i> Delete</button>` : ''}
           </div>
         </div>
       </div>
-      <div class="card-name" title="${safeName}">${safeName}</div>
-      <div class="card-meta">
-        <div class="card-meta-row"><i class="fas fa-graduation-cap"></i>${f.course || ''}</div>
-        <div class="card-meta-row"><i class="fas fa-book"></i>${f.subject || ''}</div>
-        <div class="card-meta-row"><i class="fas fa-calendar-alt"></i>${f.year || ''}</div>
-        ${f.size ? `<div class="card-meta-row"><i class="fas fa-weight-hanging"></i>${f.size}</div>` : ''}
+      <div class="nfc-tags">
+        ${f.course ? `<span class="nfc-tag tag-purple">${f.course}</span>` : ''}
+        ${f.year ? `<span class="nfc-tag tag-blue">${f.year}</span>` : ''}
+        ${grp ? `<span class="nfc-tag tag-orange" onclick="downloadGroupAsZip('${grp.id}')" title="Download group as ZIP"><i class="fas fa-cube"></i> GROUP</span>` : ''}
       </div>
-      <div class="card-tags">
-        ${f.course ? `<span class="tag tag-course">${f.course}</span>` : ''}
-        ${f.year ? `<span class="tag tag-year">${f.year}</span>` : ''}
-        ${f.semester ? `<span class="tag tag-sem">Sem ${f.semester}</span>` : ''}
-        ${grp ? `<span class="tag tag-group" onclick="downloadGroupAsZip('${grp.id}')" title="Download group as ZIP">📦 Group</span>` : ''}
-      </div>
-      <div class="card-actions">
-        <button class="btn-download ripple-container" onclick="openPreviewModal('${safeUrl}','${safeName}','${ft}', '${f.id}')" style="flex:1; background:var(--glass-bg); border:1px solid var(--glass-border); color:var(--text-primary); box-shadow:none; font-size:0.8rem;">
-          <i class="fas fa-eye"></i> View
-        </button>
-        <button class="btn-download ripple-container" onclick="downloadFile('${safeUrl}','${safeName}')" style="flex:1.3; font-size:0.8rem;">
-          <i class="fas fa-download"></i> Download
-        </button>
+      <div class="nfc-bottom">
+        <button class="nfc-btn btn-dark" onclick="openPreviewModal('${safeUrl}','${safeName}','${ft}', '${f.id}')"><i class="fas fa-eye"></i> View</button>
+        <button class="nfc-btn btn-gradient" onclick="downloadFile('${safeUrl}','${safeName}')"><i class="fas fa-download"></i> Download</button>
         ${likeBtn}
         ${footerDeleteBtn}
       </div>
@@ -3667,5 +3693,26 @@ function handleChatKey(e) { if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault
 function autoResizeTextarea(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
 function sendSuggestion(el) { document.getElementById('chatInput').value=el.textContent; sendChatMessage(); }
 </script>
+
+<!-- Bottom Navigation Bar -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="window.scrollTo(0,0)">
+    <div class="nav-indicator"></div>
+    <i class="fas fa-home"></i>
+    <span>Home</span>
+  </button>
+  <button class="nav-item" onclick="switchView('groups')">
+    <i class="fas fa-cloud-upload-alt"></i>
+    <span>My Uploads</span>
+  </button>
+  <button class="nav-item" onclick="showToast('info', 'Favourites', 'Feature coming soon!')">
+    <i class="far fa-heart"></i>
+    <span>Favourites</span>
+  </button>
+  <button class="nav-item" onclick="showToast('info', 'Notifications', 'Feature coming soon!')">
+    <i class="far fa-bell"></i>
+    <span>Notifications</span>
+  </button>
+</nav>
 </body>
 </html>
