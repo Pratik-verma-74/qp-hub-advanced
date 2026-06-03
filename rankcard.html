@@ -157,6 +157,25 @@
     position: fixed; inset: 0; background: var(--bg-base); z-index: 100;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
+  /* SKELETON LOADING SYSTEM */
+  .skeleton {
+    background: linear-gradient(90deg, var(--card-bg) 25%, var(--glass-border) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 4px;
+    color: transparent !important;
+    pointer-events: none;
+    border: none !important;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-text { height: 0.85rem; margin-bottom: 0.4rem; border-radius: 4px; }
+  .skeleton-text.short { width: 35%; }
+  .skeleton-text.medium { width: 65%; }
+  .skeleton-text.long { width: 90%; }
+  .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
 </style>
 <!-- SECURITY: Anti-Inspect & Data Protection -->
 <script>
@@ -177,11 +196,6 @@
 </head>
 <body>
 
-<div id="loaderOverlay">
-  <div style="font-size: 3rem; color: var(--accent-1); margin-bottom: 20px;"><i class="fas fa-circle-notch fa-spin"></i></div>
-  <h2 style="font-family: var(--font-head);">Generating Rank Card...</h2>
-</div>
-
 <header>
   <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Home</a>
 </header>
@@ -195,28 +209,29 @@
   <div class="rank-card" id="rankCard">
     <div class="card-header">
       <div class="card-type" id="cardTypeLabel">Quiz Champion</div>
-      <img id="cardUserPhoto" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent-1); margin: 10px auto; display: block; object-fit: cover;" crossorigin="anonymous">
-      <div class="user-name" id="cardUserName">Loading...</div>
+      <div class="skeleton skeleton-avatar" id="skeletonAvatar" style="width: 70px; height: 70px; margin: 10px auto;"></div>
+      <img id="cardUserPhoto" src="" alt="Profile" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent-1); margin: 10px auto; display: none; object-fit: cover;" crossorigin="anonymous">
+      <div class="user-name skeleton skeleton-text" id="cardUserName" style="width:150px; height:24px; margin:0 auto;">Loading...</div>
     </div>
     
     <div class="rank-circle">
       <div class="rank-label">Global Rank</div>
-      <div class="rank-value" id="cardRank">--</div>
+      <div class="rank-value skeleton skeleton-text" id="cardRank" style="width:60px; height:36px; margin:0 auto;">--</div>
     </div>
 
     <div class="stats-row">
       <div class="stat-col">
-        <div class="stat-val" id="stat1Val">--</div>
+        <div class="stat-val skeleton skeleton-text" id="stat1Val" style="width:40px; height:24px; margin:0 auto;">--</div>
         <div class="stat-lbl" id="stat1Lbl">Score</div>
       </div>
       <div class="stat-col">
-        <div class="stat-val" id="stat2Val">--</div>
+        <div class="stat-val skeleton skeleton-text" id="stat2Val" style="width:40px; height:24px; margin:0 auto;">--</div>
         <div class="stat-lbl" id="stat2Lbl">Exams</div>
       </div>
     </div>
 
     <div class="ai-message" id="aiMessageContainer">
-      <div id="aiMsgText">"Loading special message..."</div>
+      <div id="aiMsgText" class="skeleton skeleton-text long" style="height:16px; margin:0 auto;">"Loading special message..."</div>
       <div class="ai-signature">- Pratik Verma</div>
     </div>
 
@@ -322,7 +337,7 @@
 
       // Populate UI
       updateUI();
-      document.getElementById('loaderOverlay').style.display = 'none';
+
       
     } catch (e) {
       console.error(e);
@@ -338,6 +353,12 @@
   }
 
   function updateUI() {
+    document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton', 'skeleton-text', 'long'));
+    const skeletonAvatar = document.getElementById('skeletonAvatar');
+    if (skeletonAvatar) skeletonAvatar.style.display = 'none';
+    const cardUserPhoto = document.getElementById('cardUserPhoto');
+    if (cardUserPhoto) cardUserPhoto.style.display = 'block';
+
     const isQuiz = currentMode === 'quiz';
     const data = isQuiz ? quizData : uploaderData;
     

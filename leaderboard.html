@@ -231,6 +231,26 @@
 
   .col-exam { flex: 1; color: var(--text-secondary); font-size: 0.85rem; }
   .col-accuracy { width: 90px; text-align: right; color: var(--success); font-weight: 600; font-size: 0.9rem; }
+
+  /* SKELETON LOADING SYSTEM */
+  .skeleton {
+    background: linear-gradient(90deg, var(--card-bg) 25%, var(--glass-border) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 4px;
+    color: transparent !important;
+    pointer-events: none;
+    border: none !important;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-text { height: 0.85rem; margin-bottom: 0.4rem; border-radius: 4px; }
+  .skeleton-text.short { width: 35%; }
+  .skeleton-text.medium { width: 65%; }
+  .skeleton-text.long { width: 90%; }
+  .skeleton-avatar { width: 36px; height: 36px; border-radius: 50%; }
 </style>
 </head>
 <body>
@@ -365,7 +385,25 @@
     return null;
   }
 
+  function buildSkeletonRow() {
+    return `
+      <div class="leaderboard-row" style="margin-bottom:8px; pointer-events:none; align-items:center;">
+        <div class="col-rank skeleton skeleton-text short" style="width:20px; margin:0;"></div>
+        <div class="col-user" style="flex:1; display:flex; gap:16px;">
+          <div class="user-avatar skeleton skeleton-avatar"></div>
+          <div class="user-info" style="flex:1;">
+            <div class="skeleton skeleton-text medium" style="width:120px; margin-bottom:6px;"></div>
+            <div class="skeleton skeleton-text short" style="width:80px; height:0.6rem; margin:0;"></div>
+          </div>
+        </div>
+        <div class="col-uploads skeleton skeleton-text short" style="width:60px; margin:0;"></div>
+        <div class="col-points skeleton skeleton-text short" style="width:60px; margin:0;"></div>
+      </div>
+    `;
+  }
+
   function loadLeaderboardData() {
+    document.getElementById('leaderboardList').innerHTML = Array(6).fill(0).map(() => buildSkeletonRow()).join('');
     db.collection('papers').get().then(snapshot => {
       const userMap = {};
       
@@ -427,6 +465,7 @@
   }
 
   function loadQuizScores() {
+    document.getElementById('quizLeaderboardList').innerHTML = Array(6).fill(0).map(() => buildSkeletonRow()).join('');
     db.collection('quiz_scores').orderBy('score', 'desc').limit(50).get().then(snapshot => {
       const list = document.getElementById('quizLeaderboardList');
       if (snapshot.empty) {

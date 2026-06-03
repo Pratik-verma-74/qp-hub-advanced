@@ -188,6 +188,29 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* SKELETON LOADING SYSTEM */
+  .skeleton {
+    background: linear-gradient(90deg, var(--card-bg) 25%, var(--glass-border) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 4px;
+    color: transparent !important;
+    pointer-events: none;
+    border: none !important;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-text { height: 0.85rem; margin-bottom: 0.4rem; border-radius: 4px; }
+  .skeleton-text.short { width: 35%; }
+  .skeleton-text.medium { width: 65%; }
+  .skeleton-text.long { width: 90%; }
+  .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+  .skeleton-icon { width: 48px; height: 48px; border-radius: 12px; }
+  .skeleton-btn { height: 38px; border-radius: 12px; flex: 1; }
+  .skeleton-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px; box-shadow: none; pointer-events: none; }
 </style>
 <!-- SECURITY: Anti-Inspect & Data Protection -->
 <script>
@@ -255,8 +278,8 @@
   <div class="profile-header-card glass">
     <img id="dashboardAvatar" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile Picture" class="profile-avatar-big" />
     <div class="profile-info">
-      <h2 class="profile-name" id="dashboardName">Student Creator</h2>
-      <div class="profile-email"><i class="fas fa-envelope"></i> <span id="dashboardEmail">student@domain.com</span></div>
+      <h2 class="profile-name skeleton skeleton-text" id="dashboardName" style="width: 200px; height: 32px;">Student Creator</h2>
+      <div class="profile-email"><i class="fas fa-envelope"></i> <span class="skeleton skeleton-text short" id="dashboardEmail" style="width: 150px; margin:0;">student@domain.com</span></div>
       <button class="btn-home ripple-container" onclick="openEditProfileModal()" style="margin-top: 12px; font-size: 0.8rem; padding: 6px 16px; height: 34px; max-width: 150px; justify-content: center;">
         <i class="fas fa-pen"></i> <span>Edit Profile</span>
       </button>
@@ -264,15 +287,15 @@
       <!-- Stats Row -->
       <div class="profile-stats">
         <div class="stat-card">
-          <div class="stat-num" id="statPersonalFiles">0</div>
+          <div class="stat-num skeleton skeleton-text short" id="statPersonalFiles" style="height:30px; margin: 0 auto 6px;"></div>
           <div class="stat-label">Your Uploads</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num" id="statLikesReceived">0</div>
+          <div class="stat-num skeleton skeleton-text short" id="statLikesReceived" style="height:30px; margin: 0 auto 6px;"></div>
           <div class="stat-label">Likes Received</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num" id="statSharesReceived">0</div>
+          <div class="stat-num skeleton skeleton-text short" id="statSharesReceived" style="height:30px; margin: 0 auto 6px;"></div>
           <div class="stat-label">Total Shares</div>
         </div>
       </div>
@@ -385,7 +408,8 @@ let db = null;
 let auth = null;
 let isFirebaseActive = false;
 let currentUser = null;
-let fileData = [];
+let fileData = null;
+let isDataLoaded = false;
 let currentPreviewBlobUrl = null;
 let currentPreviewPaperId = null;
 
@@ -452,8 +476,12 @@ function handleAuthStateChanged(user) {
 
   // Update dashboard details
   document.getElementById('dashboardAvatar').src = displayPhoto;
-  document.getElementById('dashboardName').textContent = user.displayName || 'Student Creator';
-  document.getElementById('dashboardEmail').textContent = user.email || '';
+  const dName = document.getElementById('dashboardName');
+  dName.textContent = user.displayName || 'Student Creator';
+  dName.classList.remove('skeleton', 'skeleton-text');
+  const dEmail = document.getElementById('dashboardEmail');
+  dEmail.textContent = user.email || '';
+  dEmail.classList.remove('skeleton', 'skeleton-text', 'short');
 
   renderPersonalDashboard();
 }
@@ -482,6 +510,7 @@ function syncPapersFromFirestore() {
       papers.push({ id: doc.id, ...doc.data() });
     });
     fileData = papers;
+    isDataLoaded = true;
     renderPersonalDashboard();
 
     // Real-time update of open preview modal comments
@@ -498,6 +527,7 @@ function loadSampleData() {
     { id:'s1', name:'BCA_2023_C_Programming.pdf', course:'BCA', year:'2023', subject:'C Programming', semester:'I', url:'#', size:'1.2 MB', date:'2023-11-10', fileType:'pdf', likesCount:15, likedBy:['demo1'], sharesCount:5, comments: [{id:'1', text:'This was super helpful!', userName:'Pratik Verma', userEmail:'admin@gmail.com', userUid:'demo1', date:new Date().toISOString()}], uploaderUid: 'demo-user', uploaderEmail: 'demo@domain.com', uploaderName: 'Student Creator (Demo)' },
     { id:'s2', name:'BCA_2022_DBMS.pdf', course:'BCA', year:'2022', subject:'DBMS', semester:'III', url:'#', size:'980 KB', date:'2022-12-01', fileType:'pdf', likesCount:30, likedBy:[], sharesCount:12, comments: [], uploaderUid: 'demo-user', uploaderEmail: 'demo@domain.com', uploaderName: 'Student Creator (Demo)' }
   ];
+  isDataLoaded = true;
   // Simulate log in
   currentUser = {
     displayName: "Student Creator (Demo)",
@@ -562,8 +592,18 @@ function renderPersonalDashboard() {
 
   trophyWall.style.display = hasTrophy ? 'block' : 'none';
 
+  // Remove stat skeleton classes
+  ['statPersonalFiles','statLikesReceived','statSharesReceived'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('skeleton', 'skeleton-text', 'short'); el.style.height = ''; }
+  });
+
   // Render Grid
   const grid = document.getElementById('personalFileGrid');
+  if (!isDataLoaded) {
+    grid.innerHTML = Array(3).fill(0).map(() => buildSkeletonCard()).join('');
+    return;
+  }
   if (myPapers.length === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; padding: 60px 20px; text-align: center; animation: fadeIn 0.5s ease;">
@@ -627,6 +667,24 @@ function buildPersonalCard(f, idx) {
           <i class="fas fa-download"></i> Download
         </button>
         <button class="btn-delete-card" onclick="deleteOwnFile('${f.id}')" title="Delete Paper"><i class="fas fa-trash-alt"></i></button>
+      </div>
+    </div>`;
+}
+
+function buildSkeletonCard() {
+  return `
+    <div class="file-card skeleton-card" style="animation:none; box-shadow:none;">
+      <div class="card-top">
+        <div class="card-pdf-icon skeleton"></div>
+      </div>
+      <div class="card-name skeleton skeleton-text medium"></div>
+      <div class="card-meta">
+        <div class="card-meta-row skeleton skeleton-text short"></div>
+        <div class="card-meta-row skeleton skeleton-text short"></div>
+      </div>
+      <div class="card-actions" style="margin-top:20px; flex-direction:row;">
+        <div class="skeleton skeleton-btn"></div>
+        <div class="skeleton skeleton-btn"></div>
       </div>
     </div>`;
 }

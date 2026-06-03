@@ -305,6 +305,25 @@
     }
     #warningToast.show { transform: translateX(-50%) translateY(0); }
 
+  /* SKELETON LOADING SYSTEM */
+  .skeleton {
+    background: linear-gradient(90deg, var(--card-bg) 25%, var(--glass-border) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 4px;
+    color: transparent !important;
+    pointer-events: none;
+    border: none !important;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-text { height: 0.85rem; margin-bottom: 0.4rem; border-radius: 4px; }
+  .skeleton-text.short { width: 35%; }
+  .skeleton-text.medium { width: 65%; }
+  .skeleton-text.long { width: 90%; }
+  .skeleton-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: none; pointer-events: none; }
   </style>
 <!-- SECURITY: Anti-Inspect & Data Protection -->
 <script>
@@ -382,13 +401,29 @@
         </button>
       </div>
 
-      <!-- LOADING PANEL -->
-      <div id="loadingPanel" style="text-align: center; padding: 40px 0;">
-        <div class="loader"></div>
-        <h3 style="color: var(--accent-1);">Generating AI Questions...</h3>
-        <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">
-          Our 15-year experienced AI professor is crafting your test based on PYQs.
-        </p>
+      <!-- LOADING PANEL (Skeleton) -->
+      <div id="loadingPanel" style="display:none; padding: 20px 0;">
+        <div class="quiz-header" style="margin-bottom: 20px; border-bottom: none;">
+          <div class="skeleton skeleton-text short" style="width: 100px; height: 24px; margin:0;"></div>
+          <div class="skeleton skeleton-text short" style="width: 80px; height: 24px; border-radius: 20px; margin:0;"></div>
+        </div>
+        
+        <div class="skeleton skeleton-text long" style="height: 24px; margin-bottom: 12px;"></div>
+        <div class="skeleton skeleton-text medium" style="height: 24px; margin-bottom: 30px;"></div>
+        
+        <div class="options-grid">
+          <div class="skeleton skeleton-card" style="height: 60px; margin:0;"></div>
+          <div class="skeleton skeleton-card" style="height: 60px; margin:0;"></div>
+          <div class="skeleton skeleton-card" style="height: 60px; margin:0;"></div>
+          <div class="skeleton skeleton-card" style="height: 60px; margin:0;"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+          <h3 style="color: var(--accent-1); margin-bottom: 8px;">Generating AI Questions...</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Our 15-year experienced AI professor is crafting your test based on PYQs.
+          </p>
+        </div>
       </div>
 
       <!-- QUIZ PANEL -->
