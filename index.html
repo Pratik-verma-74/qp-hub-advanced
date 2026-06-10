@@ -2984,18 +2984,26 @@ async function handleUpload() {
   document.getElementById('progressPct').textContent  = '100%';
   document.getElementById('progressText').textContent = `Done! ${successCount}/${total} uploaded.`;
 
-  // Local State creation for groups (if offline or fallback used)
-  if ((!isFirebaseActive || usedLocalFallback) && newFileIds.length > 0) {
+  // Optimistic UI Update: Always show the uploaded files immediately
+  // This ensures the UI updates even if the Firebase listener is dead or slow
+  if (newFileIds.length > 0) {
     const groupLabel = `${course} · ${subject} · ${year}${semester ? ` · Sem ${semester}` : ''}`;
-    groups.unshift({
-      id:      groupId,
-      label:   groupLabel,
-      course, subject, year, semester,
-      date:    new Date().toISOString().split('T')[0],
-      fileIds: newFileIds,
-    });
     
-    // Refresh local lists
+    // Check if group already exists locally (in case of fallback/offline)
+    const existingGroup = groups.find(g => g.id === groupId);
+    if (existingGroup) {
+      existingGroup.fileIds.push(...newFileIds);
+    } else {
+      groups.unshift({
+        id:      groupId,
+        label:   groupLabel,
+        course, subject, year, semester,
+        date:    new Date().toISOString().split('T')[0],
+        fileIds: newFileIds,
+      });
+    }
+    
+    // Refresh UI
     renderFileGrid();
     renderGroups();
     updateStats();
