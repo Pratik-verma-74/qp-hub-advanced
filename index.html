@@ -2719,8 +2719,6 @@ function uploadSingleToCloudinary(file, publicId, onProgress) {
 // ✅ HANDLE UPLOAD — creates a GROUP for all selected files
 // ============================================================
 async function handleUpload() {
-  if (selectedFiles.length === 0) {
-    showToast('info', 'No Files', 'Please select at least one file.');
   if (!currentUser) return showToast('error', 'Login Required', 'You must be logged in to upload files.');
   if (selectedFiles.length === 0) return showToast('error', 'Validation', 'Please select at least one file.');
 
