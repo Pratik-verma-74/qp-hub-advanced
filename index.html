@@ -3934,6 +3934,7 @@ function updateStats() {
 
 function animateCount(id, target) {
   const el    = document.getElementById(id);
+  if (!el) return;
   const start = parseInt(el.textContent) || 0;
   const dur = 600, step = 16;
   const inc = (target - start) / (dur / step);
@@ -4164,7 +4165,7 @@ function sendSuggestion(el) { document.getElementById('chatInput').value=el.text
 
 <!-- Bottom Navigation Bar -->
 <nav class="bottom-nav">
-  <button class="nav-item active" onclick="window.scrollTo(0,0)">
+  <button class="nav-item active" onclick="window.scrollTo(0,0); switchView('categories');">
     <div class="nav-indicator"></div>
     <i class="fas fa-home"></i>
     <span>Home</span>
