@@ -2081,9 +2081,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ⚡ Setup Real-time Database Sync
     syncPapersFromFirestore();
   } else {
-    loadSampleData();
+    syncPapersFromImageKit();
     setTimeout(() => {
-      showToast('warning', 'Offline Mode Active', 'Academic Hub is currently running in offline demo mode. Setup your Firebase credentials to connect to Google Cloud.');
+      showToast('warning', 'Firebase Inactive', 'Falling back to ImageKit Media Library to fetch your files.');
     }, 1000);
   }
   
@@ -2201,16 +2201,15 @@ function syncPapersFromFirestore() {
 
   let syncTimeout = setTimeout(() => {
     if (!isDataLoaded) {
-      console.warn("Firestore sync timeout. Force clearing skeletons.");
-      isDataLoaded = true;
-      renderFileGrid();
-      renderGroups();
-      updateStats();
-      renderCategoryStats();
+      console.warn("Firestore sync timeout. Falling back to ImageKit...");
+      syncPapersFromImageKit();
     }
   }, 4000);
 
   db.collection('papers').orderBy('date', 'desc').onSnapshot(snapshot => {
+    // Clear timeout since we got data
+    clearTimeout(syncTimeout);
+
     const papers = [];
     snapshot.forEach(doc => {
       papers.push({ id: doc.id, ...doc.data() });
@@ -2273,7 +2272,107 @@ function syncPapersFromFirestore() {
     }
   }, err => {
     console.error("Firestore sync failed:", err);
-    showToast('error', 'Sync Failed', 'Cloud Database connection error: ' + err.message);
+    if (!isDataLoaded) {
+      console.warn("Falling back to ImageKit...");
+      syncPapersFromImageKit();
+    }
+  });
+}
+
+async function syncPapersFromImageKit() {
+  const url = 'https://api.imagekit.io/v1/files?path=/academic-hub&limit=1000';
+  try {
+    const res = await fetch(url, {
+      headers: { 'Authorization': 'Basic ' + btoa(IMAGEKIT_PRIVATE + ':') }
+    });
+    if (!res.ok) throw new Error('Failed to fetch from ImageKit');
+    
+    const data = await res.json();
+    
+    const parsedFiles = data.map((file, idx) => {
+      const ext = file.name.split('.').pop();
+      const noExt = file.name.replace('.' + ext, '');
+      const parts = noExt.split('_');
+      
+      let c = parts[0] || 'Misc';
+      let y = parts[1] || new Date().getFullYear().toString();
+      let s = 'Document';
+      let sem = '';
+      
+      if (parts.length > 2) {
+         if (!isNaN(parts[parts.length-1])) parts.pop(); // remove index
+         const last = parts[parts.length-1];
+         if (last && last.startsWith('Sem')) {
+             sem = last.replace('Sem', '');
+             parts.pop();
+         }
+         if (parts.length > 2) {
+             s = parts.slice(2).join(' ');
+         }
+      }
+      
+      return {
+        id: file.fileId || ('ik_' + idx),
+        name: file.name,
+        course: c,
+        year: y,
+        subject: s,
+        semester: sem,
+        url: file.url,
+        fileType: file.fileType === 'image' ? 'image' : 'pdf',
+        size: (file.size / 1024).toFixed(2) + ' KB',
+        date: file.createdAt ? file.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
+        groupId: 'grp_' + (file.createdAt ? file.createdAt.split('T')[0] : 'default'),
+        originalName: file.name,
+        uploaderName: 'Student'
+      };
+    });
+    
+    fileData = parsedFiles;
+
+    // Normalize courses
+    fileData.forEach(f => {
+      if (f.course && typeof f.course === 'string') {
+        const uc = f.course.toUpperCase().trim();
+        if (['NIMCET', 'BCA', 'BBA', 'NCC', 'CUET', 'TANCET', 'VIT'].includes(uc)) {
+          f.course = uc;
+        } else if (uc === 'BIOTECHNOLOGY') {
+          f.course = 'Biotechnology';
+        } else if (uc === 'B.SC NURSING' || uc === 'BSC NURSING') {
+          f.course = 'B.Sc Nursing';
+        }
+      }
+    });
+
+    // Build groups
+    const groupMap = {};
+    fileData.forEach(f => {
+      if (!groupMap[f.groupId]) {
+        groupMap[f.groupId] = {
+          id: f.groupId,
+          label: `Uploads on ${f.date}`,
+          course: 'Mixed', subject: 'Multiple', year: f.year, semester: '',
+          date: f.date,
+          fileIds: []
+        };
+      }
+      groupMap[f.groupId].fileIds.push(f.id);
+    });
+    
+    groups = Object.values(groupMap);
+    groups.sort((a,b) => new Date(b.date) - new Date(a.date));
+    
+    isDataLoaded = true;
+    renderFileGrid();
+    renderGroups();
+    updateStats();
+    renderCategoryStats();
+    
+    showToast('success', 'ImageKit Sync', 'Data loaded directly from ImageKit server!');
+    
+  } catch (err) {
+    console.error("ImageKit Sync failed:", err);
+    showToast('error', 'Sync Failed', 'Both Firebase and ImageKit sync failed.');
     if (!isDataLoaded) {
       isDataLoaded = true;
       renderFileGrid();
@@ -2281,7 +2380,7 @@ function syncPapersFromFirestore() {
       updateStats();
       renderCategoryStats();
     }
-  });
+  }
 }
 
 function initYearDropdowns() {
