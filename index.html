@@ -2199,6 +2199,17 @@ function checkLoginAndOpenModal() {
 function syncPapersFromFirestore() {
   if (!isFirebaseActive) return;
 
+  let syncTimeout = setTimeout(() => {
+    if (!isDataLoaded) {
+      console.warn("Firestore sync timeout. Force clearing skeletons.");
+      isDataLoaded = true;
+      renderFileGrid();
+      renderGroups();
+      updateStats();
+      renderCategoryStats();
+    }
+  }, 4000);
+
   db.collection('papers').orderBy('date', 'desc').onSnapshot(snapshot => {
     const papers = [];
     snapshot.forEach(doc => {
@@ -2263,6 +2274,13 @@ function syncPapersFromFirestore() {
   }, err => {
     console.error("Firestore sync failed:", err);
     showToast('error', 'Sync Failed', 'Cloud Database connection error: ' + err.message);
+    if (!isDataLoaded) {
+      isDataLoaded = true;
+      renderFileGrid();
+      renderGroups();
+      updateStats();
+      renderCategoryStats();
+    }
   });
 }
 
