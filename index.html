@@ -2822,27 +2822,46 @@ async function mergeImagesToPDF(imageFiles) {
           reader.readAsDataURL(file);
         });
         
-        // Get natural image dimensions
-        const imgProps = await new Promise(r => {
-          const img = new Image();
-          img.onload = () => r({ width: img.width, height: img.height });
-          img.src = dataUrl;
+        // Get natural image dimensions & load image
+        const img = await new Promise((r, rej) => {
+          const image = new Image();
+          image.onload = () => r(image);
+          image.onerror = () => rej(new Error(`Failed to load image: ${file.name}`));
+          image.src = dataUrl;
         });
         
+        // Normalize and compress via Canvas to prevent Out of Memory crashes and format errors
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Scale down huge images to max 1500px width/height to save memory
+        const MAX_DIM = 1500;
+        let cWidth = img.width;
+        let cHeight = img.height;
+        if (cWidth > MAX_DIM || cHeight > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / cWidth, MAX_DIM / cHeight);
+          cWidth *= ratio;
+          cHeight *= ratio;
+        }
+        
+        canvas.width = cWidth;
+        canvas.height = cHeight;
+        ctx.drawImage(img, 0, 0, cWidth, cHeight);
+        
+        // Always get a clean JPEG data URI from the canvas
+        const cleanJpegUrl = canvas.toDataURL('image/jpeg', 0.85);
+
         // Calculate scaling (fit within A4)
-        const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
-        const width = imgProps.width * ratio;
-        const height = imgProps.height * ratio;
-        const x = (pdfWidth - width) / 2;
-        const y = (pdfHeight - height) / 2;
+        const ratio = Math.min(pdfWidth / cWidth, pdfHeight / cHeight);
+        const drawWidth = cWidth * ratio;
+        const drawHeight = cHeight * ratio;
+        const x = (pdfWidth - drawWidth) / 2;
+        const y = (pdfHeight - drawHeight) / 2;
 
         if (i > 0) pdf.addPage();
         
-        let format = 'JPEG';
-        if (file.type.includes('png')) format = 'PNG';
-        else if (file.type.includes('webp')) format = 'WEBP';
-        
-        pdf.addImage(dataUrl, format, x, y, width, height);
+        // Always use JPEG since we normalized it
+        pdf.addImage(cleanJpegUrl, 'JPEG', x, y, drawWidth, drawHeight);
       }
       resolve(pdf.output('blob'));
     } catch (e) {
