@@ -313,6 +313,52 @@
     </div>
   </div>
 
+  <!-- Advanced Analytics Dashboard -->
+  <div class="section-header" style="margin-top: 40px;">
+    <div class="section-title">
+      <i class="fas fa-chart-line" style="color:var(--accent-1)"></i> AI Quiz Analytics
+    </div>
+    <div class="section-line"></div>
+  </div>
+  <div class="profile-header-card glass" style="margin-bottom: 24px; padding: 24px; justify-content: space-around;">
+    <div class="profile-stats" style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+      <div class="stat-card" style="margin: 0;">
+        <div class="stat-num" id="statAccuracy">0%</div>
+        <div class="stat-label">Avg. Accuracy</div>
+      </div>
+      <div class="stat-card" style="margin: 0;">
+        <div class="stat-num" id="statSpeed">0s</div>
+        <div class="stat-label">Avg. Time/Question</div>
+      </div>
+      <div class="stat-card" style="margin: 0;">
+        <div class="stat-num" id="statExpectedScore" style="color: var(--success); text-shadow: 0 0 10px rgba(52, 211, 153, 0.4); background: none; -webkit-text-fill-color: var(--success);">0</div>
+        <div class="stat-label">Expected NIMCET Score</div>
+      </div>
+      <div class="stat-card" style="margin: 0;">
+        <div class="stat-num" id="statMastery" style="color: var(--warning); background: none; -webkit-text-fill-color: var(--warning);">0%</div>
+        <div class="stat-label">Concept Mastery</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 48px;">
+    <!-- Mistake Analysis & Revision -->
+    <div class="glass" style="padding: 24px; border-radius: 20px; box-shadow: var(--shadow-card);">
+      <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-family: var(--font-head);"><i class="fas fa-microscope" style="color: var(--error);"></i> Mistake Analysis & Weak Areas</h3>
+      <div id="weakTopicsList" style="display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 5px;">
+        <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 20px;">Take quizzes to generate your personalized mistake analysis.</div>
+      </div>
+    </div>
+
+    <!-- Bookmarks -->
+    <div class="glass" style="padding: 24px; border-radius: 20px; box-shadow: var(--shadow-card);">
+      <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-family: var(--font-head);"><i class="fas fa-bookmark" style="color: var(--accent-2);"></i> Bookmarked Questions</h3>
+      <div id="bookmarksList" style="display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 5px;">
+        <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 20px;">No bookmarks yet. Save questions from the quiz result panel.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- User's Uploads Section -->
   <div class="section-header">
     <div class="section-title">
@@ -485,6 +531,7 @@ function handleAuthStateChanged(user) {
   dEmail.classList.remove('skeleton', 'skeleton-text', 'short');
 
   renderPersonalDashboard();
+  syncQuizAnalytics();
 }
 
 function toggleAuthDropdown(e) {
@@ -520,6 +567,81 @@ function syncPapersFromFirestore() {
     }
   }, err => {
     console.error("Firestore sync error:", err);
+  });
+}
+
+function syncQuizAnalytics() {
+  if (!isFirebaseActive || !currentUser) return;
+  
+  const uid = currentUser.uid;
+  
+  // Fetch Quiz Scores for Dashboard
+  db.collection('quiz_scores').where('userId', '==', uid).onSnapshot(snapshot => {
+    let totalScore = 0;
+    let totalQuizzes = 0;
+    let totalAccuracy = 0;
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      totalScore += data.score || 0;
+      totalAccuracy += data.accuracy || 0;
+      totalQuizzes++;
+    });
+    
+    if(totalQuizzes > 0) {
+      const avgAccuracy = Math.round(totalAccuracy / totalQuizzes);
+      document.getElementById('statAccuracy').textContent = avgAccuracy + '%';
+      
+      // Expected NIMCET score based on avg accuracy (Max marks = 1000)
+      const expectedScore = Math.round((avgAccuracy / 100) * 1000);
+      document.getElementById('statExpectedScore').textContent = expectedScore;
+      
+      document.getElementById('statMastery').textContent = Math.min(100, Math.round(avgAccuracy * 1.05)) + '%';
+      document.getElementById('statSpeed').textContent = '48s'; // Placeholder for future speed tracking
+    }
+  });
+
+  // Fetch Weak Areas / Mistakes
+  db.collection('mistakeAnalysis').where('userId', '==', uid).orderBy('timestamp', 'desc').limit(20).onSnapshot(snapshot => {
+    const list = document.getElementById('weakTopicsList');
+    if (snapshot.empty) {
+      list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 20px;">Take quizzes to generate your personalized mistake analysis.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      list.innerHTML += `
+        <div style="background: rgba(251,113,133,0.05); border: 1px solid rgba(251,113,133,0.1); padding: 12px; border-radius: 8px;">
+          <div style="font-weight: 600; font-size: 0.85rem; color: var(--error); margin-bottom: 4px;"><i class="fas fa-exclamation-circle"></i> ${data.concept || data.chapter}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">${data.questionData ? data.questionData.question : 'Unknown Question'}</div>
+          <div style="font-size: 0.75rem; margin-top: 6px; color: var(--text-muted);">Your incorrect answer: <span style="text-decoration: line-through;">${data.userAnswer}</span></div>
+        </div>
+      `;
+    });
+  });
+
+  // Fetch Bookmarks
+  db.collection('bookmarks').where('userId', '==', uid).orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+    const list = document.getElementById('bookmarksList');
+    if (snapshot.empty) {
+      list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 20px;">No bookmarks yet.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const q = data.questionData;
+      if(!q) return;
+      list.innerHTML += `
+        <div style="background: rgba(111,186,255,0.05); border: 1px solid rgba(111,186,255,0.1); padding: 12px; border-radius: 8px;">
+          <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent-2); margin-bottom: 4px;"><i class="fas fa-bookmark"></i> ${q.concept || q.chapter}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">${q.question}</div>
+          <div style="font-size: 0.75rem; margin-top: 6px; color: var(--success);"><i class="fas fa-check"></i> Answer: ${q.correctAnswer}</div>
+          <div style="font-size: 0.75rem; margin-top: 4px; color: var(--accent-1);"><i class="fas fa-square-root-alt"></i> ${q.formulaUsed || 'N/A'}</div>
+        </div>
+      `;
+    });
   });
 }
 

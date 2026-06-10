@@ -371,6 +371,14 @@
         <h2 class="section-title">Configure Your AI Quiz</h2>
         
         <div class="form-group">
+          <label>Mode</label>
+          <select id="modeSelect">
+            <option value="Topic Practice">Topic Practice</option>
+            <option value="Formula Revision">Formula Revision</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label>Select Exam</label>
           <select id="examSelect" onchange="updateSubjects()">
             <option value="NIMCET">NIMCET</option>
@@ -388,13 +396,33 @@
           <select id="chapterSelect"></select>
         </div>
 
-        <div class="form-group">
-          <label>Difficulty Level</label>
-          <select id="difficultySelect">
-            <option value="Basic">Basic</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
-          </select>
+        <div class="form-group" style="display:flex; gap:15px;">
+          <div style="flex:1;">
+            <label>Question Count</label>
+            <select id="questionCountSelect">
+              <option value="5">5 Questions</option>
+              <option value="10">10 Questions</option>
+              <option value="15">15 Questions</option>
+              <option value="20">20 Questions</option>
+              <option value="25">25 Questions</option>
+              <option value="50">50 Questions</option>
+              <option value="100">100 Questions</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label>Difficulty Level</label>
+            <select id="difficultySelect">
+              <option value="PYQ Mixed">PYQ Mixed</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+              <option value="Frequently Repeated">Frequently Repeated</option>
+              <option value="Most Important">Most Important</option>
+              <option value="Rare Questions">Rare Questions</option>
+              <option value="Recent Years">Recent Years</option>
+              <option value="High Weightage">High Weightage</option>
+            </select>
+          </div>
         </div>
 
         <button class="btn-primary" id="startBtn" onclick="startQuiz()">
@@ -495,12 +523,20 @@
     // --- Data Definitions based on Uploaded Images ---
     const syllabus = {
       "NIMCET": {
-        "Algebra": ["Set Theory", "Progression", "Binomial Theorem", "Determinant and Matrices", "Quadratic Equation", "Permutations and Combinations", "Probability", "Statistics"],
-        "Coordinate Geometry 2D": ["Rectangular Cartesian System", "Straight Lines", "Pair of Straight Lines", "Circle", "Conics"],
-        "Trigo": ["Trigonometric Ratios and Functions", "Trigonometric Equation", "Properties of Triangle", "Inverse Trigonometric Function"],
-        "Calculus": ["Function", "Limit", "Continuity and Differentiability", "Differentiation", "Indefinite Integrals"],
-        "Computer Basics": ["Organization of a Computer", "Central Processing Unit (CPU)", "Structure of Instructions in CPU", "Input/Output Devices", "Computer Memory"],
-        "Data Representation": ["Representation of Characters", "Binary Number System", "Hexadecimal Number System", "Binary Arithmetic", "Boolean Algebra"]
+        "Set Theory": ["Basic Set Theory", "Venn Diagrams", "Applications of Sets"],
+        "Algebra": ["Progression", "Binomial Theorem", "Quadratic Equation"],
+        "Probability": ["Basic Probability", "Conditional Probability", "Bayes Theorem"],
+        "Statistics": ["Measures of Central Tendency", "Standard Deviation", "Variance"],
+        "Matrices": ["Determinants", "Adjoint and Inverse", "System of Linear Equations"],
+        "Vectors": ["Dot Product", "Cross Product", "Scalar Triple Product"],
+        "Calculus": ["Limits", "Differentiation", "Integration", "Application of Derivatives"],
+        "Coordinate Geometry": ["Straight Lines", "Circles", "Conic Sections"],
+        "Trigonometry": ["Identities", "Equations", "Inverse Trigonometric Functions", "Properties of Triangles"],
+        "Relations and Functions": ["Types of Relations", "Domain and Range", "Composite Functions"],
+        "Number System": ["Divisibility", "Remainders", "Base Conversions"],
+        "Permutation and Combination": ["Fundamental Principle of Counting", "Circular Permutations", "Combinations"],
+        "Logical Reasoning": ["Puzzles", "Blood Relations", "Syllogism"],
+        "Analytical Ability": ["Data Interpretation", "Sequence and Series"]
       },
       "BCA": {
         "Programming in C": ["Data Types", "Control Structures", "Arrays", "Pointers", "Functions", "Structures"],
@@ -603,24 +639,54 @@
 
     // --- AI Integration ---
     async function startQuiz() {
+      const mode = document.getElementById('modeSelect').value;
       const exam = document.getElementById('examSelect').value;
       const subject = document.getElementById('subjectSelect').value;
       const chapter = document.getElementById('chapterSelect').value;
       const diff = document.getElementById('difficultySelect').value;
+      const qCount = document.getElementById('questionCountSelect').value;
 
       showPanel('loadingPanel');
 
-      const prompt = `Act as an expert professor with 15 years experience preparing students for the ${exam} exam. Create 5 multiple-choice questions for the subject "${subject}", specifically the chapter "${chapter}" at a "${diff}" difficulty level. 
-      CRITICAL INSTRUCTION: You must provide 100% mathematically and logically correct answers. Double-check all calculations. The questions must be based on previous year exam patterns.
-      Ensure the questions are highly unique and completely different every time. (Random uniqueness seed: ${Math.random()})
-      Respond ONLY with a valid JSON array of objects. Do not include markdown code blocks, explanations outside the JSON, or any greetings. 
-      Format exactly like this:
+      const prompt = `ACT AS A WORLD-CLASS STAFF SOFTWARE ENGINEER, AI ARCHITECT, DATA ENGINEER AND NIMCET EXAM DOMAIN EXPERT WITH 20+ YEARS OF EXPERIENCE.
+      YOUR PRIMARY OBJECTIVE: Act as a Previous Year Question (PYQ) Analyst for the ${exam} exam.
+      
+      GENERATE EXACTLY ${qCount} QUESTIONS for Subject: "${subject}", Chapter: "${chapter}".
+      MODE: "${mode}".
+      DIFFICULTY LEVEL: "${diff}".
+
+      ABSOLUTE RULES:
+      - NO RANDOM QUESTIONS. NO GENERIC TEXTBOOK QUESTIONS. NO HALLUCINATED FORMULAS.
+      - EVERY Formula, Concept, Explanation, Objective Question, Pattern, Trick, and Difficulty MUST originate from real previous year ${exam} papers.
+      - You must provide 100% mathematically and logically correct answers. Double-check all calculations.
+      - Ensure questions are highly unique (Seed: ${Math.random()}).
+
+      Respond ONLY with a valid JSON array of objects. Do not include markdown code blocks (\`\`\`json) or conversational text.
+      JSON SCHEMA FOR EVERY QUESTION OBJECT:
       [
         {
-          "q": "Question text here?",
+          "id": "unique-id-str",
+          "subject": "${subject}",
+          "chapter": "${chapter}",
+          "topic": "Specific topic name",
+          "concept": "Core concept tested",
+          "year": "e.g., 2021",
+          "yearsRepeated": ["2018", "2021"],
+          "timesRepeated": 2,
+          "frequencyScore": "High",
+          "importanceScore": "Very High",
+          "difficulty": "${diff}",
+          "formulaUsed": "Formula or theorem used",
+          "question": "Question text here",
           "options": ["Option A", "Option B", "Option C", "Option D"],
-          "answer": "Option B",
-          "explanation": "Step by step mathematical or logical solution proving why Option B is 100% correct."
+          "correctAnswer": "Exact matching string from options array",
+          "explanation": "Detailed step-by-step solution. Explain why this is correct AND why other options are common traps/wrong.",
+          "shortRevision": "One-line memory booster note",
+          "shortcutMethod": "Time-saving trick to solve under 30s",
+          "commonMistake": "What students typically do wrong here",
+          "estimatedTime": "60s",
+          "confidenceLevel": "High",
+          "tags": ["tag1", "tag2"]
         }
       ]`;
 
@@ -704,30 +770,73 @@
       document.getElementById('qNumberDisplay').innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
       
       const q = questions[currentQuestionIndex];
-      document.getElementById('questionText').innerText = q.q;
+      const mode = document.getElementById('modeSelect').value;
+
+      // Formula Revision Mode Logic
+      if (mode === "Formula Revision" && !q.formulaViewed) {
+        showFormulaCard(q);
+        return;
+      }
+
+      document.getElementById('questionText').innerText = q.question;
 
       const grid = document.getElementById('optionsGrid');
       grid.innerHTML = '';
       
       const letters = ['A', 'B', 'C', 'D'];
-      q.options.forEach((opt, idx) => {
-        const btn = document.createElement('div');
-        btn.className = 'option-btn';
-        btn.innerHTML = `
-          <div class="option-letter">${letters[idx]}</div>
-          <div class="option-text">${opt}</div>
-        `;
-        btn.onclick = () => selectOption(btn, opt);
-        grid.appendChild(btn);
-      });
+      if(Array.isArray(q.options)) {
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement('div');
+          btn.className = 'option-btn';
+          btn.innerHTML = `
+            <div class="option-letter">${letters[idx]}</div>
+            <div class="option-text">${opt}</div>
+          `;
+          btn.onclick = () => selectOption(btn, opt);
+          grid.appendChild(btn);
+        });
+      }
 
       // Reset and start timer
-      timeLeft = 60;
+      timeLeft = parseInt(q.estimatedTime) || 60;
       updateTimerDisplay();
       clearInterval(timerInterval);
       timerInterval = setInterval(timerTick, 1000);
       
+      document.getElementById('nextBtn').style.display = 'inline-block';
       document.getElementById('nextBtn').innerText = currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next';
+    }
+
+    function showFormulaCard(q) {
+      clearInterval(timerInterval);
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = `
+        <div class="formula-card" style="grid-column: 1 / -1; background: var(--bg-card); padding: 25px; border-radius: var(--radius); border: 1px solid var(--accent-1); text-align: left;">
+          <h3 style="color: var(--accent-1); margin-bottom: 15px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
+            <i class="fas fa-brain"></i> Concept: ${q.concept || 'N/A'}
+          </h3>
+          <p style="margin-bottom: 10px;"><strong><i class="fas fa-square-root-alt"></i> Formula:</strong> <span style="color:var(--accent-2); font-size: 1.1rem;">${q.formulaUsed || 'N/A'}</span></p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; background: var(--glass-bg); padding: 10px; border-radius: 8px;">
+            <div><strong>Years Asked:</strong> ${q.yearsRepeated ? q.yearsRepeated.join(', ') : (q.year || 'N/A')}</div>
+            <div><strong>Times Repeated:</strong> ${q.timesRepeated || 1}</div>
+            <div><strong>Importance:</strong> <span style="color: var(--warning);">${q.importanceScore || 'High'}</span></div>
+            <div><strong>Difficulty:</strong> ${q.difficulty || 'Medium'}</div>
+          </div>
+          <p style="margin-bottom: 10px;"><strong><i class="fas fa-bolt"></i> Shortcut Method:</strong> ${q.shortcutMethod || 'N/A'}</p>
+          <p style="margin-bottom: 10px;"><strong><i class="fas fa-exclamation-triangle"></i> Common Mistake:</strong> ${q.commonMistake || 'N/A'}</p>
+          <p style="margin-bottom: 15px; padding: 10px; background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--accent-2); border-radius: 4px;"><strong><i class="fas fa-lightbulb"></i> Memory Booster:</strong> ${q.shortRevision || 'N/A'}</p>
+          <div style="text-align: right;">
+            <button class="btn-primary" style="width: auto; padding: 10px 20px;" onclick="startCurrentQuestion()">I'm Ready <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      `;
+      document.getElementById('questionText').innerText = "Review the Formula & Concept Card carefully before starting the question.";
+      document.getElementById('nextBtn').style.display = 'none';
+    }
+
+    function startCurrentQuestion() {
+      questions[currentQuestionIndex].formulaViewed = true;
+      loadQuestion();
     }
 
     function selectOption(btnElement, optValue) {
@@ -757,14 +866,12 @@
       clearInterval(timerInterval);
       
       const q = questions[currentQuestionIndex];
-      const isCorrect = selectedOption === q.answer;
+      const isCorrect = selectedOption === q.correctAnswer;
       
       // Save answer state for explanations
       userAnswers.push({
-        question: q.q,
-        correctAnswer: q.answer,
+        questionObj: q,
         userAnswer: selectedOption || "Unanswered",
-        explanation: q.explanation,
         isCorrect: isCorrect
       });
 
@@ -795,48 +902,100 @@
       expContainer.innerHTML = '';
       
       userAnswers.forEach((ans, idx) => {
+        const q = ans.questionObj;
         const box = document.createElement('div');
         box.className = 'explanation-box';
         
         const statusColor = ans.isCorrect ? 'var(--success)' : 'var(--error)';
         const statusIcon = ans.isCorrect ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>';
         
+        // Escape quotes for bookmark button
+        const qDataStr = JSON.stringify(q).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+
         box.innerHTML = `
           <h4>Q${idx + 1} <span style="float: right; color: ${statusColor}; font-size: 0.9rem;">${statusIcon} ${ans.isCorrect ? '+4' : (ans.userAnswer === 'Unanswered' ? '0' : '-1')}</span></h4>
-          <div class="q-text">${ans.question}</div>
+          <div class="q-text" style="font-weight: 500; margin-bottom: 10px;">${q.question}</div>
           <div style="font-size: 0.9rem; margin-bottom: 8px;">Your Answer: <span style="color: ${statusColor};">${ans.userAnswer}</span></div>
-          <div class="ans-text">Correct Answer: ${ans.correctAnswer}</div>
-          <div class="exp-text"><strong>Explanation:</strong> ${ans.explanation}</div>
+          <div class="ans-text" style="margin-bottom: 15px;">Correct Answer: <strong style="color: var(--success);">${q.correctAnswer}</strong></div>
+          
+          <div class="exp-content" style="background: var(--glass-bg); padding: 15px; border-radius: 8px; font-size: 0.9rem; border-left: 4px solid var(--accent-1);">
+            <p style="margin-bottom: 8px;"><strong><i class="fas fa-chalkboard-teacher"></i> Detailed Explanation:</strong> ${q.explanation || 'N/A'}</p>
+            <p style="margin-bottom: 8px;"><strong><i class="fas fa-square-root-alt"></i> Formula Used:</strong> <span style="color: var(--accent-2);">${q.formulaUsed || 'N/A'}</span></p>
+            <p style="margin-bottom: 8px;"><strong><i class="fas fa-bolt"></i> Shortcut:</strong> ${q.shortcutMethod || 'N/A'}</p>
+            <p style="margin-bottom: 8px;"><strong><i class="fas fa-history"></i> Previous Year Reference:</strong> ${q.yearsRepeated ? q.yearsRepeated.join(', ') : (q.year || 'N/A')}</p>
+            <p style="margin-bottom: 8px;"><strong><i class="fas fa-exclamation-triangle"></i> Common Mistake:</strong> ${q.commonMistake || 'N/A'}</p>
+          </div>
+          <div style="margin-top: 15px; text-align: right;">
+            <button class="btn-primary" style="padding: 5px 15px; font-size: 0.8rem; width: auto; background: var(--bg-card); border: 1px solid var(--accent-2); color: var(--accent-2);" onclick="bookmarkQuestion('${q.id}')">
+              <i class="fas fa-bookmark"></i> Bookmark
+            </button>
+          </div>
         `;
         expContainer.appendChild(box);
       });
 
-      // Save to Firebase (Pseudo-code as Firebase Auth state needs to be managed globally)
-      saveScoreToLeaderboard(score, accuracy);
+      saveAdvancedAnalytics(score, accuracy, userAnswers);
     }
 
-    // --- Firebase Integration ---
-    function saveScoreToLeaderboard(finalScore, accuracy) {
+    function bookmarkQuestion(qId) {
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        const user = firebase.auth().currentUser;
+        if (user) {
+          const qObj = questions.find(q => q.id === qId) || {};
+          const db = firebase.firestore();
+          db.collection('bookmarks').add({
+            userId: user.uid,
+            questionData: qObj,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => {
+            alert("Question bookmarked successfully!");
+          }).catch(err => console.error("Error bookmarking:", err));
+        } else {
+          alert("Please login to bookmark questions.");
+        }
+      }
+    }
+
+    // --- Firebase Advanced Integration ---
+    function saveAdvancedAnalytics(finalScore, accuracy, answers) {
       if (typeof firebase !== 'undefined' && firebase.auth) {
         const user = firebase.auth().currentUser;
         if (user) {
           const db = firebase.firestore();
-          db.collection('quiz_scores').add({
+          const batch = db.batch();
+          
+          // 1. Save general score
+          const scoreRef = db.collection('quiz_scores').doc();
+          batch.set(scoreRef, {
             userId: user.uid,
             userName: user.displayName || 'Anonymous Student',
-            userEmail: user.email,
             exam: document.getElementById('examSelect').value,
             subject: document.getElementById('subjectSelect').value,
             chapter: document.getElementById('chapterSelect').value,
-            difficulty: document.getElementById('difficultySelect').value,
+            mode: document.getElementById('modeSelect').value,
             score: finalScore,
             accuracy: accuracy,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
-          }).then(() => {
-            console.log("Score saved to leaderboard!");
-          }).catch(err => {
-            console.error("Error saving score:", err);
           });
+
+          // 2. Save Mistake Analysis for wrong answers
+          const mistakes = answers.filter(a => !a.isCorrect && a.userAnswer !== "Unanswered");
+          mistakes.forEach(m => {
+            const mistakeRef = db.collection('mistakeAnalysis').doc();
+            batch.set(mistakeRef, {
+              userId: user.uid,
+              subject: m.questionObj.subject || 'Unknown',
+              chapter: m.questionObj.chapter || 'Unknown',
+              concept: m.questionObj.concept || 'Unknown',
+              questionData: m.questionObj,
+              userAnswer: m.userAnswer,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          });
+
+          batch.commit().then(() => {
+            console.log("Advanced analytics saved!");
+          }).catch(err => console.error("Error saving analytics:", err));
         }
       }
     }
