@@ -2574,9 +2574,9 @@ function classifyFile(file) {
   const name = file.name.toLowerCase();
   const type = file.type;
   if (type === 'application/pdf' || name.endsWith('.pdf')) return 'pdf';
-  if (['image/jpeg','image/jpg','image/png'].includes(type) || /\.(jpg|jpeg|png)$/.test(name)) return 'image';
-  if (['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(type) || /\.(doc|docx)$/.test(name)) return 'doc';
-  return null;
+  if (type.startsWith('image/') || /\.(jpg|jpeg|png|heic|webp|gif|bmp)$/.test(name)) return 'image';
+  if (['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(type) || /\.(doc|docx|txt|rtf)$/.test(name)) return 'doc';
+  return 'doc'; // Default fallback instead of skipping
 }
 
 function getFileIconInfo(category) {
