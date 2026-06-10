@@ -10,9 +10,6 @@
 <!-- ✅ JSZip for ZIP download feature -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-<!-- ✅ jsPDF for Image to PDF conversion -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <!-- ✅ Firebase Compat SDKs (Production Ready) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -2542,38 +2539,67 @@ function renderCategoryStats() {
   if (!slider) return;
   
   slider.innerHTML = '';
-  const recentFiles = [...fileData].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+  // Get top 5 most recent groups
+  const recentGroups = [...groups].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
   
-  if (recentFiles.length === 0) {
+  if (recentGroups.length === 0) {
      slider.innerHTML = `<div style="padding: 20px; color: var(--text-muted); font-size: 0.9rem;">No recent uploads.</div>`;
      return;
   }
   
-  recentFiles.forEach(f => {
-      const isPdf = f.fileType === 'pdf';
-      const iconUrl = isPdf ? 'https://cdn-icons-png.flaticon.com/512/337/337946.png' : 'https://cdn-icons-png.flaticon.com/512/337/337936.png';
-      
+  recentGroups.forEach(g => {
       const card = document.createElement('div');
       card.className = 'file-card glass';
       card.style.position = 'relative'; // Required for absolute positioned delete button
       
-      const safeUrl = escapeAttr(f.url || '#');
-      const safeName = escapeAttr(f.name || 'file');
+      const count = g.fileIds ? g.fileIds.length : 0;
       
-      const deleteHtml = isAdmin ? `<button onclick="event.stopPropagation(); deleteFile('${f.id}')" style="position:absolute; right:10px; top:10px; background:rgba(255,0,0,0.2); color:red; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; z-index:10;" title="Delete File"><i class="fas fa-trash"></i></button>` : '';
+      if (count === 1) {
+          const f = fileData.find(x => x.id === g.fileIds[0]);
+          if (!f) return;
+          const isPdf = f.fileType === 'pdf';
+          const iconUrl = isPdf ? 'https://cdn-icons-png.flaticon.com/512/337/337946.png' : 'https://cdn-icons-png.flaticon.com/512/337/337936.png';
+          const safeUrl = escapeAttr(f.url || '#');
+          const safeName = escapeAttr(f.name || 'file');
+          
+          const deleteHtml = isAdmin ? `<button onclick="event.stopPropagation(); deleteFile('${f.id}')" style="position:absolute; right:10px; top:10px; background:rgba(255,0,0,0.2); color:red; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; z-index:10;" title="Delete File"><i class="fas fa-trash"></i></button>` : '';
 
-      card.innerHTML = `
-        ${deleteHtml}
-        <img src="${iconUrl}" class="file-icon" alt="File">
-        <div class="file-info" style="margin-top:0;">
-          <div class="file-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${f.name}</div>
-          <div class="file-meta">
-            <span><i class="fas fa-layer-group"></i> ${f.course}</span>
-            <span><i class="fas fa-calendar-alt"></i> ${f.year}</span>
-          </div>
-        </div>
-      `;
-      card.onclick = () => openPreviewModal(safeUrl, safeName, f.fileType, f.id);
+          card.innerHTML = `
+            ${deleteHtml}
+            <img src="${iconUrl}" class="file-icon" alt="File">
+            <div class="file-info" style="margin-top:0;">
+              <div class="file-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${f.name}</div>
+              <div class="file-meta">
+                <span><i class="fas fa-layer-group"></i> ${f.course}</span>
+                <span><i class="fas fa-calendar-alt"></i> ${f.year}</span>
+              </div>
+            </div>
+          `;
+          card.onclick = () => openPreviewModal(safeUrl, safeName, f.fileType, f.id);
+      } else {
+          // Folder / Collection Card
+          const firstFile = fileData.find(x => x.id === g.fileIds[0]);
+          const safeName = escapeAttr(g.label || (firstFile ? firstFile.name.replace(/_[0-9]+$/, '') : 'Collection'));
+          
+          const deleteHtml = isAdmin ? `<button onclick="event.stopPropagation(); deleteGroup('${g.id}')" style="position:absolute; right:10px; top:10px; background:rgba(255,0,0,0.2); color:red; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; z-index:10;" title="Delete Collection"><i class="fas fa-trash"></i></button>` : '';
+
+          card.innerHTML = `
+            ${deleteHtml}
+            <div class="file-icon doc-type" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-1); display:flex; align-items:center; justify-content:center; position:relative; font-size:2rem;">
+              <i class="fas fa-images"></i>
+              <span style="position:absolute; bottom:5px; right:5px; font-size:12px; font-weight:bold; background:var(--accent-1); color:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${count}</span>
+            </div>
+            <div class="file-info" style="margin-top:0;">
+              <div class="file-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${safeName}</div>
+              <div class="file-meta">
+                <span><i class="fas fa-layer-group"></i> ${g.course}</span>
+                <span><i class="fas fa-copy"></i> Collection</span>
+              </div>
+            </div>
+          `;
+          card.onclick = () => openCarouselModal(g.id);
+      }
+      
       slider.appendChild(card);
   });
 }
@@ -2804,107 +2830,16 @@ function removeSelectedFile(idx) {
   if (selectedFiles.length === 0) document.getElementById('fileInput').value = '';
 }
 
-async function mergeImagesToPDF(imageFiles) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      for (let i = 0; i < imageFiles.length; i++) {
-        const file = imageFiles[i];
-        
-        // Read image as Data URL
-        const dataUrl = await new Promise(r => {
-          const reader = new FileReader();
-          reader.onload = e => r(e.target.result);
-          reader.readAsDataURL(file);
-        });
-        
-        // Get natural image dimensions & load image
-        const img = await new Promise((r, rej) => {
-          const image = new Image();
-          image.onload = () => r(image);
-          image.onerror = () => rej(new Error(`Failed to load image: ${file.name}`));
-          image.src = dataUrl;
-        });
-        
-        // Normalize and compress via Canvas to prevent Out of Memory crashes and format errors
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Scale down huge images to max 1500px width/height to save memory
-        const MAX_DIM = 1500;
-        let cWidth = img.width;
-        let cHeight = img.height;
-        if (cWidth > MAX_DIM || cHeight > MAX_DIM) {
-          const ratio = Math.min(MAX_DIM / cWidth, MAX_DIM / cHeight);
-          cWidth *= ratio;
-          cHeight *= ratio;
-        }
-        
-        canvas.width = cWidth;
-        canvas.height = cHeight;
-        ctx.drawImage(img, 0, 0, cWidth, cHeight);
-        
-        // Always get a clean JPEG data URI from the canvas
-        const cleanJpegUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-        // Calculate scaling (fit within A4)
-        const ratio = Math.min(pdfWidth / cWidth, pdfHeight / cHeight);
-        const drawWidth = cWidth * ratio;
-        const drawHeight = cHeight * ratio;
-        const x = (pdfWidth - drawWidth) / 2;
-        const y = (pdfHeight - drawHeight) / 2;
-
-        if (i > 0) pdf.addPage();
-        
-        // Always use JPEG since we normalized it
-        pdf.addImage(cleanJpegUrl, 'JPEG', x, y, drawWidth, drawHeight);
-      }
-      resolve(pdf.output('blob'));
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
-async function handleFilesSelected(files) {
+function handleFilesSelected(files) {
   let skipped = 0;
-  const imageFiles = [];
-  const otherFiles = [];
-
   Array.from(files).forEach(file => {
     if (file.size > 100 * 1024 * 1024) { skipped++; return; }
     const category = classifyFile(file);
     if (!category) { skipped++; return; }
-    
     if (!selectedFiles.some(sf => sf.file.name === file.name && sf.file.size === file.size)) {
-       if (category === 'image') imageFiles.push(file);
-       else otherFiles.push({ file, category });
+      selectedFiles.push({ file, category });
     }
   });
-
-  // Automatically merge multiple images into one PDF
-  if (imageFiles.length > 1) {
-    showToast('info', 'Merging Images', `Please wait, combining ${imageFiles.length} images into a single PDF...`);
-    try {
-      const pdfBlob = await mergeImagesToPDF(imageFiles);
-      const pdfFile = new File([pdfBlob], `Merged_Images_${Date.now()}.pdf`, { type: 'application/pdf' });
-      selectedFiles.push({ file: pdfFile, category: 'pdf' });
-      showToast('success', 'Merge Complete', 'Images successfully converted to PDF.');
-    } catch (err) {
-      console.error("PDF Merge Failed:", err);
-      showToast('error', 'Merge Failed', 'Could not convert images to PDF. Adding them individually.');
-      imageFiles.forEach(file => selectedFiles.push({ file, category: 'image' }));
-    }
-  } else if (imageFiles.length === 1) {
-    selectedFiles.push({ file: imageFiles[0], category: 'image' });
-  }
-
-  otherFiles.forEach(item => selectedFiles.push(item));
-
   if (skipped > 0) showToast('error', 'Skipped Files', `${skipped} file(s) skipped (unsupported or >100MB).`);
   renderMultiFileList();
 }
@@ -3441,34 +3376,64 @@ function toggleGroupCard(gId) {
 /**
  * Mini file card used inside group view
  */
-function buildMiniFileCard(f) {
-  const ft      = f.fileType || 'pdf';
-  const safeUrl = escapeAttr(f.url || '#');
-  const safeName= escapeAttr(f.name || 'file');
+function buildMiniGroupCard(g) {
+  // Check if this group has only one file
+  if (g.fileIds.length === 1) {
+    const f = fileData.find(x => x.id === g.fileIds[0]);
+    if (!f) return ''; // Safely handle missing files
+    
+    const ft      = f.fileType || 'pdf';
+    const safeUrl = escapeAttr(f.url || '#');
+    const safeName= escapeAttr(f.name || 'file');
 
-  let thumbOrIcon = '';
-  if (ft === 'image' && f.url && f.url !== '#') {
-    thumbOrIcon = `<img class="mini-file-thumb" src="${safeUrl}" alt="${safeName}" onerror="this.parentElement.querySelector('.mini-file-icon-fallback').style.display='flex'; this.style.display='none'" />`;
-  } else {
-    const iconMap = { pdf: ['fa-file-pdf', 'pdf-type'], image: ['fa-file-image', 'img-type'], doc: ['fa-file-word', 'doc-type'] };
-    const [fa, cls] = iconMap[ft] || iconMap.pdf;
-    thumbOrIcon = `<div class="mini-file-icon ${cls}"><i class="fas ${fa}"></i></div>`;
+    let thumbOrIcon = '';
+    if (ft === 'image' && f.url && f.url !== '#') {
+      thumbOrIcon = `<img class="mini-file-thumb" src="${safeUrl}" alt="${safeName}" onerror="this.parentElement.querySelector('.mini-file-icon-fallback').style.display='flex'; this.style.display='none'" />`;
+    } else {
+      const iconMap = { pdf: ['fa-file-pdf', 'pdf-type'], image: ['fa-file-image', 'img-type'], doc: ['fa-file-word', 'doc-type'] };
+      const [fa, cls] = iconMap[ft] || iconMap.pdf;
+      thumbOrIcon = `<div class="mini-file-icon ${cls}"><i class="fas ${fa}"></i></div>`;
+    }
+
+    const deleteFileBtn = isAdmin
+      ? `<button class="mini-btn rm" onclick="deleteFile('${f.id}')" title="Delete"><i class="fas fa-trash-alt"></i></button>`
+      : '';
+
+    return `
+      <div class="mini-file-card" id="mcard-${f.id}">
+        ${thumbOrIcon}
+        <div class="mini-file-info">
+          <div class="mini-file-name" title="${safeName}">${safeName}</div>
+          <div class="mini-file-size">${f.size || f.course || ''}</div>
+        </div>
+        <div class="mini-file-actions">
+          <button class="mini-btn view" onclick="openPreviewModal('${safeUrl}','${safeName}','${ft}', '${f.id}')" title="Preview"><i class="fas fa-eye"></i></button>
+          <button class="mini-btn dl" onclick="downloadFile('${safeUrl}','${safeName}')" title="Download"><i class="fas fa-download"></i></button>
+          ${deleteFileBtn}
+        </div>
+      </div>`;
   }
-
+  
+  // LOGIC FOR MULTI-FILE GROUPS (FOLDER/COLLECTION)
+  const firstFile = fileData.find(x => x.id === g.fileIds[0]);
+  const safeName = escapeAttr(g.label || (firstFile ? firstFile.name.replace(/_[0-9]+$/, '') : 'Collection'));
+  const count = g.fileIds.length;
+  const thumbOrIcon = `<div class="mini-file-icon doc-type" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-1); position: relative;"><i class="fas fa-images"></i><span style="position:absolute; bottom:4px; right:4px; font-size:10px; font-weight:bold; background:var(--accent-1); color:white; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${count}</span></div>`;
+  
   const deleteFileBtn = isAdmin
-    ? `<button class="mini-btn rm" onclick="deleteFile('${f.id}')" title="Delete"><i class="fas fa-trash-alt"></i></button>`
+    ? `<button class="mini-btn rm" onclick="deleteGroup('${g.id}')" title="Delete Collection"><i class="fas fa-trash-alt"></i></button>`
     : '';
 
   return `
-    <div class="mini-file-card" id="mcard-${f.id}">
+    <div class="mini-file-card" id="mcard-${g.id}">
       ${thumbOrIcon}
       <div class="mini-file-info">
         <div class="mini-file-name" title="${safeName}">${safeName}</div>
-        <div class="mini-file-size">${f.size || f.course || ''}</div>
+        <div class="mini-file-size">${g.course || ''} • Collection</div>
       </div>
       <div class="mini-file-actions">
-        <button class="mini-btn view" onclick="openPreviewModal('${safeUrl}','${safeName}','${ft}', '${f.id}')" title="Preview"><i class="fas fa-eye"></i></button>
-        <button class="mini-btn dl" onclick="downloadFile('${safeUrl}','${safeName}')" title="Download"><i class="fas fa-download"></i></button>
+        <button class="mini-btn view" onclick="openCarouselModal('${g.id}')" title="View Collection"><i class="fas fa-eye"></i></button>
+        <button class="mini-btn dl" onclick="downloadGroupAsZip('${g.id}')" title="Download All"><i class="fas fa-download"></i></button>
         ${deleteFileBtn}
       </div>
     </div>`;
@@ -3489,17 +3454,18 @@ function renderFileGrid(data = null) {
     return;
   }
 
-  const items = data ?? getFilteredFiles();
+  const items = data ?? getFilteredGroups();
 
   const badge = document.getElementById('fileCountBadge');
-  if (badge) badge.textContent = fileData.length;
+  if (badge) badge.textContent = groups.length;
   
   const filterRes = document.getElementById('filterResults');
   if (filterRes) {
-    filterRes.textContent = `Showing ${items.length} paper${items.length !== 1 ? 's' : ''} (Total: ${fileData.length})`;
+    const totalFiles = items.reduce((sum, g) => sum + (g.fileIds ? g.fileIds.length : 1), 0);
+    filterRes.textContent = `Showing ${items.length} group${items.length !== 1 ? 's' : ''} (${totalFiles} file${totalFiles !== 1 ? 's' : ''})`;
   }
 
-  if (items.length === 0 && fileData.length === 0) {
+  if (items.length === 0 && groups.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--glass-bg); border-radius: 20px; border: 1px dashed var(--accent-1);">
         <img src="https://cdn3d.iconscout.com/3d/premium/thumb/empty-box-4994247-4160410.png" style="width: 150px; margin-bottom: 20px; opacity: 0.8;" alt="Empty">
@@ -3512,11 +3478,6 @@ function renderFileGrid(data = null) {
 
   if (items.length === 0) {
     grid.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--glass-bg); border-radius: 20px; border: 1px dashed var(--accent-1);">
-        <img src="https://cdn3d.iconscout.com/3d/premium/thumb/empty-box-4994247-4160410.png" style="width: 150px; margin-bottom: 20px; opacity: 0.8;" alt="Empty">
-        <h3 style="font-family: var(--font-head); margin-bottom: 10px;">No Results Found</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 20px;">Try adjusting your filters.</p>
-        <button class="btn-primary" onclick="checkLoginAndOpenModal()"><i class="fas fa-upload"></i> Upload Now</button>
       </div>`;
     return;
   }
@@ -3746,8 +3707,87 @@ function closeAdminPanel() {
 // ============================================================
 // ✅ DOCUMENT PREVIEW HANDLERS & GAMIFICATION
 // ============================================================
-let currentPreviewBlobUrl = null;
-let currentPreviewPaperId = null;
+let currentCarouselFiles = [];
+let currentCarouselIndex = 0;
+
+function openCarouselModal(groupId) {
+  const group = groups.find(g => g.id === groupId);
+  if (!group || !group.fileIds || group.fileIds.length === 0) return;
+  
+  currentCarouselFiles = group.fileIds.map(id => fileData.find(f => f.id === id)).filter(Boolean);
+  if (currentCarouselFiles.length === 0) return;
+  
+  currentCarouselIndex = 0;
+  
+  // Reuse the previewModal
+  document.getElementById('previewModalTitle').textContent = group.label || 'Collection';
+  
+  // Bind download button to download the whole ZIP
+  const dlBtn = document.getElementById('previewDownloadBtn');
+  dlBtn.onclick = () => downloadGroupAsZip(group.id);
+  
+  // Map comments/likes to the first file in the collection
+  currentPreviewPaperId = currentCarouselFiles[0].id;
+  renderCommentsList(currentPreviewPaperId);
+  
+  renderCarouselSlide();
+  
+  document.getElementById('previewModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderCarouselSlide() {
+  const docContainer = document.getElementById('previewDocContainer');
+  const file = currentCarouselFiles[currentCarouselIndex];
+  if (!file) return;
+  
+  const ft = file.fileType || 'image';
+  const safeUrl = escapeAttr(file.url || '#');
+  const safeName = escapeAttr(file.name || 'file');
+  
+  let contentHtml = '';
+  if (ft === 'image') {
+      contentHtml = `<img src="${safeUrl}" alt="${safeName}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
+  } else if (ft === 'pdf' || ft === 'doc') {
+      const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(safeUrl)}&embedded=true`;
+      contentHtml = `<iframe src="${gviewUrl}" style="width:100%; height:100%; border:none; border-radius:8px;" title="Document Preview"></iframe>`;
+  } else {
+      contentHtml = `<div style="text-align:center; color:var(--text-secondary); padding:20px;">Unsupported file type</div>`;
+  }
+  
+  // Inject arrows if there are multiple files
+  let arrowsHtml = '';
+  if (currentCarouselFiles.length > 1) {
+    arrowsHtml = `
+      <button onclick="prevCarouselSlide(event)" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; z-index:10; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.3); backdrop-filter:blur(4px); transition: 0.2s;"><i class="fas fa-chevron-left"></i></button>
+      <button onclick="nextCarouselSlide(event)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; z-index:10; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.3); backdrop-filter:blur(4px); transition: 0.2s;"><i class="fas fa-chevron-right"></i></button>
+      <div style="position:absolute; bottom:15px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:white; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; z-index:10; backdrop-filter:blur(4px); box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+        ${currentCarouselIndex + 1} / ${currentCarouselFiles.length}
+      </div>
+    `;
+  }
+  
+  docContainer.innerHTML = `
+    <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--glass-bg); border-radius:8px; overflow:hidden;">
+      ${arrowsHtml}
+      ${contentHtml}
+    </div>
+  `;
+}
+
+function prevCarouselSlide(e) {
+  if(e) e.stopPropagation();
+  if (currentCarouselFiles.length <= 1) return;
+  currentCarouselIndex = (currentCarouselIndex - 1 + currentCarouselFiles.length) % currentCarouselFiles.length;
+  renderCarouselSlide();
+}
+
+function nextCarouselSlide(e) {
+  if(e) e.stopPropagation();
+  if (currentCarouselFiles.length <= 1) return;
+  currentCarouselIndex = (currentCarouselIndex + 1) % currentCarouselFiles.length;
+  renderCarouselSlide();
+}
 
 // Trophy Milestone Engine
 function getTrophy(likes) {
@@ -4173,21 +4213,31 @@ clearSearchEl.addEventListener('click', () => { searchInput.value = ''; headerSe
 filterCourse.addEventListener('change', renderFileGrid);
 filterYear.addEventListener('change', renderFileGrid);
 
-function getFilteredFiles() {
+function getFilteredGroups() {
   const q      = searchInput.value.trim().toLowerCase();
   const course = filterCourse.value;
   const year   = filterYear.value;
-  return fileData.filter(f => {
-    const yStr = String(f.year || '');
-    const cStr = String(f.course || '').toLowerCase();
-    const nStr = String(f.name || '').toLowerCase();
-    const sStr = String(f.subject || '').toLowerCase();
+  
+  if (!groups) return [];
+  
+  return groups.filter(g => {
+    const yStr = String(g.year || '');
+    const cStr = String(g.course || '').toLowerCase();
+    const lStr = String(g.label || '').toLowerCase();
+    const sStr = String(g.subject || '').toLowerCase();
+    
+    // Also check if any file inside the group matches the query
+    const files = g.fileIds.map(id => fileData.find(f => f.id === id)).filter(Boolean);
+    const fileMatches = files.some(f => String(f.name || '').toLowerCase().includes(q));
+
     const matchQ = !q || 
-                   nStr.includes(q) || 
+                   lStr.includes(q) || 
                    sStr.includes(q) || 
                    yStr.includes(q) || 
-                   cStr.includes(q);
-    return matchQ && (!course || f.course === course) && (!year || yStr === year);
+                   cStr.includes(q) ||
+                   fileMatches;
+                   
+    return matchQ && (!course || g.course === course) && (!year || yStr === year);
   });
 }
 
