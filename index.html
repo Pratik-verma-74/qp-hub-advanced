@@ -2863,7 +2863,6 @@ function uploadSingleToImageKit(file, publicId, onProgress) {
 // ✅ HANDLE UPLOAD — creates a GROUP for all selected files
 // ============================================================
 async function handleUpload() {
-  if (!currentUser) return showToast('error', 'Login Required', 'You must be logged in to upload files.');
   if (selectedFiles.length === 0) return showToast('error', 'Validation', 'Please select at least one file.');
 
   let course, subject, year, semester = '';
@@ -2940,17 +2939,25 @@ async function handleUpload() {
         date:      new Date().toISOString().split('T')[0],
         groupId,                  // link file to its group
         originalName: file.name,  // store original filename for ZIP
-        uploaderName: currentUser.displayName || 'Anonymous',
-        uploaderEmail: currentUser.email || '',
-        uploaderUid: currentUser.uid || ''
+        uploaderName: currentUser ? (currentUser.displayName || 'Student') : 'Anonymous Student',
+        uploaderEmail: currentUser ? (currentUser.email || '') : '',
+        uploaderUid: currentUser ? (currentUser.uid || '') : ''
       };
 
       if (isFirebaseActive) {
-        // Write metadata directly to Firestore
-        const docRef = await db.collection('papers').add(newFile);
-        newFileIds.push(docRef.id);
+        try {
+          const docRef = await Promise.race([
+            db.collection('papers').add(newFile),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Firebase Timeout")), 4000))
+          ]);
+          newFileIds.push(docRef.id);
+        } catch (fbErr) {
+          console.warn("Firebase write failed or timed out. Falling back to local/ImageKit.", fbErr);
+          newFile.id = 'f' + Date.now() + '_' + i;
+          fileData.unshift(newFile);
+          newFileIds.push(newFile.id);
+        }
       } else {
-        // In-memory demo fallback
         newFile.id = 'f' + Date.now() + '_' + i;
         fileData.unshift(newFile);
         newFileIds.push(newFile.id);
