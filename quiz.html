@@ -510,11 +510,27 @@
     };
 
     // --- State Variables ---
-    const groqKeys = [
-      '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',
-      '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'
+    const apiEndpoints = [
+      {
+        name: 'Groq API 1',
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        key: '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',
+        model: 'llama-3.3-70b-versatile'
+      },
+      {
+        name: 'Groq API 2',
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        key: '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',
+        model: 'llama-3.3-70b-versatile'
+      },
+      {
+        name: 'OpenAI API',
+        url: 'https://api.openai.com/v1/chat/completions',
+        key: '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',
+        model: 'gpt-4o-mini'
+      }
     ];
-    let currentKeyIndex = 0;
+    let currentEndpointIndex = 0;
     let questions = [];
     let currentQuestionIndex = 0;
     let score = 0;
@@ -613,18 +629,18 @@
         let success = false;
         let lastError = "";
 
-        for (let attempt = 0; attempt < groqKeys.length; attempt++) {
-          const keyToUse = groqKeys[currentKeyIndex];
+        for (let attempt = 0; attempt < apiEndpoints.length; attempt++) {
+          const endpoint = apiEndpoints[currentEndpointIndex];
           
           try {
-            response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            response = await fetch(endpoint.url, {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${keyToUse}`,
+                'Authorization': `Bearer ${endpoint.key}`,
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: endpoint.model,
                 messages: [{ role: "user", content: prompt }],
                 temperature: 0.4
               })
@@ -636,13 +652,13 @@
             } else {
               const errData = await response.json().catch(() => ({}));
               lastError = errData.error?.message || response.statusText || 'Unknown error';
-              console.warn(`API Key ${currentKeyIndex + 1} failed: ${lastError}`);
-              currentKeyIndex = (currentKeyIndex + 1) % groqKeys.length;
+              console.warn(`${endpoint.name} failed: ${lastError}`);
+              currentEndpointIndex = (currentEndpointIndex + 1) % apiEndpoints.length;
             }
           } catch (e) {
             lastError = e.message;
-            console.warn(`Network error with Key ${currentKeyIndex + 1}: ${lastError}`);
-            currentKeyIndex = (currentKeyIndex + 1) % groqKeys.length;
+            console.warn(`Network error with ${endpoint.name}: ${lastError}`);
+            currentEndpointIndex = (currentEndpointIndex + 1) % apiEndpoints.length;
           }
         }
 
