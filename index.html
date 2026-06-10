@@ -2863,6 +2863,7 @@ function uploadSingleToImageKit(file, publicId, onProgress) {
 // ✅ HANDLE UPLOAD — creates a GROUP for all selected files
 // ============================================================
 async function handleUpload() {
+  if (!currentUser) return showToast('error', 'Login Required', 'You must be logged in to upload files.');
   if (selectedFiles.length === 0) return showToast('error', 'Validation', 'Please select at least one file.');
 
   let course, subject, year, semester = '';
@@ -2956,6 +2957,7 @@ async function handleUpload() {
           newFile.id = 'f' + Date.now() + '_' + i;
           fileData.unshift(newFile);
           newFileIds.push(newFile.id);
+          usedLocalFallback = true;
         }
       } else {
         newFile.id = 'f' + Date.now() + '_' + i;
@@ -2982,8 +2984,8 @@ async function handleUpload() {
   document.getElementById('progressPct').textContent  = '100%';
   document.getElementById('progressText').textContent = `Done! ${successCount}/${total} uploaded.`;
 
-  // Offline/Demo Mode Local State creation for groups
-  if (!isFirebaseActive && newFileIds.length > 0) {
+  // Local State creation for groups (if offline or fallback used)
+  if ((!isFirebaseActive || usedLocalFallback) && newFileIds.length > 0) {
     const groupLabel = `${course} · ${subject} · ${year}${semester ? ` · Sem ${semester}` : ''}`;
     groups.unshift({
       id:      groupId,
@@ -3032,6 +3034,10 @@ function buildCloudinaryDownloadUrl(originalUrl) {
 // 3. Fallback: direct anchor with fl_attachment URL
 // ============================================================
 async function downloadFile(url, name) {
+  if (!currentUser) {
+    showToast('error', 'Login Required', 'You must be logged in to download files.');
+    return;
+  }
   if (!url || url === '#') {
     showToast('info', 'Sample File', 'Sample entries cannot be downloaded. Real uploaded files download directly.');
     return;
@@ -3112,6 +3118,10 @@ async function fetchFileAsBlob(url) {
 // Each file fetched as blob → added to ZIP → ZIP downloaded.
 // ============================================================
 async function downloadGroupAsZip(groupId) {
+  if (!currentUser) {
+    showToast('error', 'Login Required', 'You must be logged in to download files.');
+    return;
+  }
   const group = groups.find(g => g.id === groupId);
   if (!group) { showToast('error', 'Group not found', groupId); return; }
 
