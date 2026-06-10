@@ -2209,7 +2209,7 @@ function syncPapersFromFirestore() {
 
     // Normalize course names for older uploads
     fileData.forEach(f => {
-      if (f.course) {
+      if (f.course && typeof f.course === 'string') {
         const uc = f.course.toUpperCase().trim();
         if (['NIMCET', 'BCA', 'BBA', 'NCC', 'CUET', 'TANCET', 'VIT'].includes(uc)) {
           f.course = uc;
@@ -3902,8 +3902,16 @@ function getFilteredFiles() {
   const course = filterCourse.value;
   const year   = filterYear.value;
   return fileData.filter(f => {
-    const matchQ = !q || (f.name||'').toLowerCase().includes(q) || (f.subject||'').toLowerCase().includes(q) || (f.year||'').includes(q) || (f.course||'').toLowerCase().includes(q);
-    return matchQ && (!course || f.course === course) && (!year || f.year === year);
+    const yStr = String(f.year || '');
+    const cStr = String(f.course || '').toLowerCase();
+    const nStr = String(f.name || '').toLowerCase();
+    const sStr = String(f.subject || '').toLowerCase();
+    const matchQ = !q || 
+                   nStr.includes(q) || 
+                   sStr.includes(q) || 
+                   yStr.includes(q) || 
+                   cStr.includes(q);
+    return matchQ && (!course || f.course === course) && (!year || yStr === year);
   });
 }
 
