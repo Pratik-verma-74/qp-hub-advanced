@@ -577,6 +577,21 @@ function syncPapersFromFirestore() {
       papers.push({ id: doc.id, ...doc.data() });
     });
     fileData = papers;
+    
+    // Normalize course names
+    fileData.forEach(f => {
+      if (f.course) {
+        const uc = f.course.toUpperCase().trim();
+        if (['NIMCET', 'BCA', 'BBA', 'NCC', 'CUET', 'TANCET', 'VIT'].includes(uc)) {
+          f.course = uc;
+        } else if (uc === 'BIOTECHNOLOGY') {
+          f.course = 'Biotechnology';
+        } else if (uc === 'B.SC NURSING' || uc === 'BSC NURSING') {
+          f.course = 'B.Sc Nursing';
+        }
+      }
+    });
+
     isDataLoaded = true;
     renderPersonalDashboard();
 

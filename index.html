@@ -2205,6 +2205,20 @@ function syncPapersFromFirestore() {
 
     fileData = papers;
 
+    // Normalize course names for older uploads
+    fileData.forEach(f => {
+      if (f.course) {
+        const uc = f.course.toUpperCase().trim();
+        if (['NIMCET', 'BCA', 'BBA', 'NCC', 'CUET', 'TANCET', 'VIT'].includes(uc)) {
+          f.course = uc;
+        } else if (uc === 'BIOTECHNOLOGY') {
+          f.course = 'Biotechnology';
+        } else if (uc === 'B.SC NURSING' || uc === 'BSC NURSING') {
+          f.course = 'B.Sc Nursing';
+        }
+      }
+    });
+
     // Dynamically build groups from papers metadata
     const groupMap = {};
     fileData.forEach(f => {
