@@ -2055,11 +2055,11 @@ const BCA_SYLLABUS = [
 // ============================================================
 // STATE
 // ============================================================
-let fileData        = null;   // All individual papers (null = loading)
-let groups          = null;   // Upload groups (null = loading)
+let fileData        = [];     // All individual papers (empty = loading/none)
+let groups          = [];     // Upload groups (empty = loading/none)
 let isDataLoaded    = false;  // Flag for skeletons
-let selectedFiles   = [];   // [ { file, category } ] — files queued for this upload
-let currentGroupId  = null; // Group ID being built for this upload session
+let selectedFiles   = [];     // [ { file, category } ] — files queued for this upload
+let currentGroupId  = null;   // Group ID being built for this upload session
 let currentCourseType = 'bca';
 let prefilledCourse   = null;
 let currentView       = 'categories'; // 'categories' | 'all' | 'groups'
@@ -3356,16 +3356,22 @@ function renderFileGrid(data = null) {
   
   if (!isDataLoaded) {
     grid.innerHTML = Array(6).fill(0).map(() => buildSkeletonCard()).join('');
-    document.getElementById('fileCountBadge').innerHTML = '<span class="skeleton skeleton-text short" style="display:inline-block; margin:0; width:30px;"></span>';
-    document.getElementById('filterResults').innerHTML  = '<span class="skeleton skeleton-text medium" style="display:inline-block; width:120px; margin:0;"></span>';
+    const badge = document.getElementById('fileCountBadge');
+    if (badge) badge.innerHTML = '<span class="skeleton skeleton-text short" style="display:inline-block; margin:0; width:30px;"></span>';
+    const filterRes = document.getElementById('filterResults');
+    if (filterRes) filterRes.innerHTML  = '<span class="skeleton skeleton-text medium" style="display:inline-block; width:120px; margin:0;"></span>';
     return;
   }
 
   const items = data ?? getFilteredFiles();
 
-  document.getElementById('fileCountBadge').textContent = fileData.length;
-  document.getElementById('filterResults').textContent  =
-    `Showing ${items.length} paper${items.length !== 1 ? 's' : ''} (Total: ${fileData.length})`;
+  const badge = document.getElementById('fileCountBadge');
+  if (badge) badge.textContent = fileData.length;
+  
+  const filterRes = document.getElementById('filterResults');
+  if (filterRes) {
+    filterRes.textContent = `Showing ${items.length} paper${items.length !== 1 ? 's' : ''} (Total: ${fileData.length})`;
+  }
 
   if (items.length === 0 && fileData.length === 0) {
     grid.innerHTML = `
