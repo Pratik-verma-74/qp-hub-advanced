@@ -2045,7 +2045,7 @@ let selectedFiles   = [];   // [ { file, category } ] — files queued for this 
 let currentGroupId  = null; // Group ID being built for this upload session
 let currentCourseType = 'bca';
 let prefilledCourse   = null;
-let currentView       = 'all'; // 'all' | 'groups'
+let currentView       = 'categories'; // 'categories' | 'all' | 'groups'
 let currentUser       = null;  // Logged in user
 let isAdmin           = false; // True if currentUser email matches ADMIN_EMAIL
 
@@ -2274,7 +2274,6 @@ function loadSampleData() {
 // ============================================================
 // VIEW TOGGLE & CATEGORIES
 // ============================================================
-let currentView = 'categories'; // Default to categories now
 function switchView(mode) {
   currentView = mode;
   document.getElementById('allPapersView').style.display  = mode === 'all'    ? '' : 'none';
