@@ -12,6 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="notifications.js"></script>
 
   <style>
     :root {
@@ -356,10 +357,27 @@
         <p>AI Quiz Engine</p>
       </div>
     </a>
-    <nav>
+    <nav style="display: flex; align-items: center;">
       <a href="index.html">Home</a>
       <a href="leaderboard.html">Leaderboard</a>
       <a href="profile.html">Profile</a>
+      
+      <!-- NOTIFICATIONS -->
+      <div style="position: relative; margin-left: 20px;">
+        <button class="btn-icon" id="notifBellBtn" onclick="toggleNotifications(event)" style="background: transparent; border: none; font-size: 1.1rem; color: var(--text-secondary); position: relative; cursor: pointer;">
+          <i class="fas fa-bell"></i>
+          <span id="notifBadge" style="position: absolute; top: 0px; right: 0px; background: var(--error); color: white; font-size: 0.6rem; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: none; align-items: center; justify-content: center;">0</span>
+        </button>
+        <div id="notifDropdown" class="card-dropdown" style="position: absolute; right: 0; top: 36px; min-width: 280px; max-width: 320px; text-align: left; display: none; padding: 0; overflow: hidden; z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; backdrop-filter: blur(20px);">
+          <div style="padding: 12px 16px; border-bottom: 1px solid var(--glass-border); font-weight: 700; font-family: var(--font-head); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; color: var(--text-primary);">
+            <span>Notifications</span>
+            <i class="fas fa-check-double" style="font-size: 0.8rem; color: var(--accent-1); cursor: pointer;" title="Mark all as read" onclick="markAllNotificationsRead()"></i>
+          </div>
+          <div id="notifList" style="max-height: 350px; overflow-y: auto; padding: 0;">
+             <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Loading...</div>
+          </div>
+        </div>
+      </div>
     </nav>
   </header>
 
@@ -511,7 +529,10 @@
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    initNotificationsSystem(db);
+
     // Auth Listener to ensure user is logged in
     firebase.auth().onAuthStateChanged(user => {
       if (!user) {
@@ -957,26 +978,33 @@
     }
 
     // --- Firebase Advanced Integration ---
-    function saveAdvancedAnalytics(finalScore, accuracy, answers) {
+    async function saveAdvancedAnalytics(finalScore, accuracy, answers) {
       if (typeof firebase !== 'undefined' && firebase.auth) {
         const user = firebase.auth().currentUser;
         if (user) {
           const db = firebase.firestore();
           const batch = db.batch();
           
-          // 1. Save general score
-          const scoreRef = db.collection('quiz_scores').doc();
-          batch.set(scoreRef, {
+          const exam = document.getElementById('examSelect').value;
+          const subject = document.getElementById('subjectSelect').value;
+          const chapter = document.getElementById('chapterSelect').value;
+          const mode = document.getElementById('modeSelect').value;
+
+          // 1. Prepare quiz data
+          const quizData = {
             userId: user.uid,
             userName: user.displayName || 'Anonymous Student',
-            exam: document.getElementById('examSelect').value,
-            subject: document.getElementById('subjectSelect').value,
-            chapter: document.getElementById('chapterSelect').value,
-            mode: document.getElementById('modeSelect').value,
+            exam: exam,
+            subject: subject,
+            chapter: chapter,
+            mode: mode,
             score: finalScore,
             accuracy: accuracy,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
-          });
+          };
+          
+          const scoreRef = db.collection('quiz_scores').doc();
+          batch.set(scoreRef, quizData);
 
           // 2. Save Mistake Analysis for wrong answers
           const mistakes = answers.filter(a => !a.isCorrect && a.userAnswer !== "Unanswered");
@@ -993,9 +1021,28 @@
             });
           });
 
-          batch.commit().then(() => {
-            console.log("Advanced analytics saved!");
-          }).catch(err => console.error("Error saving analytics:", err));
+          try {
+            // Check if score is top 5 before saving
+            const lbSnap = await db.collection('quiz_scores').orderBy('score', 'desc').limit(5).get();
+            let isTop5 = false;
+            if (lbSnap.empty || lbSnap.size < 5) {
+              isTop5 = true;
+            } else {
+              const fifthScore = lbSnap.docs[lbSnap.docs.length - 1].data().score || 0;
+              if (finalScore > fifthScore) isTop5 = true;
+            }
+
+            await batch.commit();
+            console.log("Firebase Save Success: quiz_scores");
+
+            if (isTop5 && finalScore > 0) {
+              const title = `🏆 New Quiz Champion!`;
+              const msg = `${user.displayName || 'A student'} just scored ${finalScore} points in ${exam} ${subject} and entered the Top 5!`;
+              broadcastNotification(db, 'achievement', title, msg, 'leaderboard.html');
+            }
+          } catch (err) {
+            console.error("Firebase Save Error (quiz_scores):", err);
+          }
         }
       }
     }
