@@ -2304,7 +2304,7 @@ function openCategory(course) {
   const filterDropdown = document.getElementById('filterCourse');
   if (filterDropdown) {
     filterDropdown.value = course;
-    applyFilters(); // This will render the grid filtered by the course
+    renderFileGrid(); // Render the grid filtered by the course
   }
 }
 
@@ -2387,81 +2387,7 @@ function renderCategoryStats() {
   });
 }
 
-function renderFileGrid() {
-  const grid = document.getElementById('fileGrid');
-  grid.innerHTML = '';
-  let count = 0;
 
-  const fCourse = document.getElementById('filterCourse').value.toLowerCase();
-  const fYear   = document.getElementById('filterYear').value;
-
-  fileData.forEach(f => {
-    // Filter
-    if (fCourse && f.course.toLowerCase() !== fCourse) return;
-    if (fYear   && f.year !== fYear) return;
-
-    count++;
-    const isPdf = f.fileType === 'pdf';
-    const iconUrl = isPdf ? 'https://cdn-icons-png.flaticon.com/512/337/337946.png' : 'https://cdn-icons-png.flaticon.com/512/337/337936.png';
-
-    const d = new Date(f.date).toLocaleDateString();
-    
-    // Naming logic
-    let displayName = f.name;
-    if (f.course && f.year && f.subject) {
-      displayName = `${f.course} ${f.year} - ${f.subject}`;
-    }
-
-    const card = document.createElement('div');
-    card.className = 'file-card glass';
-    card.onclick = () => openPreviewModal(f);
-
-    card.innerHTML = `
-      <div class="card-header-row">
-        <img src="${iconUrl}" class="file-icon" alt="File">
-        <div class="file-date">${d}</div>
-      </div>
-      <div class="file-info">
-        <div class="file-title">${displayName}</div>
-        <div class="file-meta">
-          <span><i class="fas fa-layer-group"></i> ${f.course}</span>
-          <span><i class="fas fa-calendar-alt"></i> ${f.year}</span>
-        </div>
-        <div class="nfc-tags">
-          ${f.semester ? `<div class="nfc-tag tag-purple">Sem ${f.semester}</div>` : ''}
-          <div class="nfc-tag tag-blue">${f.subject}</div>
-        </div>
-      </div>
-      <div class="nfc-bottom">
-        <button class="btn-icon-sq" title="Preview" onclick="event.stopPropagation(); openPreviewModal(${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fas fa-eye"></i></button>
-        <button class="btn-icon-sq" title="Download" onclick="event.stopPropagation(); handleDownload('${f.url}', '${f.name}')"><i class="fas fa-download"></i></button>
-        <button class="btn-icon-sq" style="margin-left:auto" title="Share" onclick="event.stopPropagation(); shareLink('${f.id}')"><i class="fas fa-share-alt"></i></button>
-        ${isAdmin ? `<button class="btn-icon-sq danger" title="Delete" onclick="event.stopPropagation(); deleteFile('${f.id}', '${f.publicId}')"><i class="fas fa-trash"></i></button>` : ''}
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-
-  const res = document.getElementById('filterResults');
-  if (fCourse || fYear) {
-    res.style.display = 'block';
-    res.innerText = count > 0 ? `Showing ${count} papers` : 'No papers found matching the filters.';
-  } else {
-    res.style.display = 'none';
-  }
-  
-  if (count === 0) {
-      // Beautiful Empty State
-      grid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--glass-bg); border-radius: 20px; border: 1px dashed var(--accent-1);">
-           <img src="https://cdn3d.iconscout.com/3d/premium/thumb/empty-box-4994247-4160410.png" style="width: 150px; margin-bottom: 20px; opacity: 0.8;" alt="Empty">
-           <h3 style="font-family: var(--font-head); margin-bottom: 10px;">No Papers Yet</h3>
-           <p style="color: var(--text-secondary); margin-bottom: 20px;">Be the first to share a paper for this category!</p>
-           <button class="btn-primary" onclick="checkLoginAndOpenModal()"><i class="fas fa-upload"></i> Upload Now</button>
-        </div>
-      `;
-  }
-}
 
 // ============================================================
 // BCA ACCORDION
@@ -3233,22 +3159,22 @@ function renderFileGrid(data = null) {
 
   if (items.length === 0 && fileData.length === 0) {
     grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon"><i class="fas fa-file-pdf"></i></div>
-        <h3>No Papers Yet</h3>
-        <p>Be the first to upload a question paper!</p>
-        <button class="btn-empty" onclick="openModal()"><i class="fas fa-upload"></i>&nbsp;Upload First Paper</button>
+      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--glass-bg); border-radius: 20px; border: 1px dashed var(--accent-1);">
+        <img src="https://cdn3d.iconscout.com/3d/premium/thumb/empty-box-4994247-4160410.png" style="width: 150px; margin-bottom: 20px; opacity: 0.8;" alt="Empty">
+        <h3 style="font-family: var(--font-head); margin-bottom: 10px;">No Papers Yet</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">Be the first to upload a question paper!</p>
+        <button class="btn-primary" onclick="checkLoginAndOpenModal()"><i class="fas fa-upload"></i> Upload First Paper</button>
       </div>`;
     return;
   }
 
   if (items.length === 0) {
     grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon"><i class="fas fa-search"></i></div>
-        <h3>No Results Found</h3>
-        <p>Try adjusting filters. ${fileData.length} total papers available.</p>
-        <button class="btn-empty" onclick="clearFilters()"><i class="fas fa-times"></i>&nbsp;Clear Filters</button>
+      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--glass-bg); border-radius: 20px; border: 1px dashed var(--accent-1);">
+        <img src="https://cdn3d.iconscout.com/3d/premium/thumb/empty-box-4994247-4160410.png" style="width: 150px; margin-bottom: 20px; opacity: 0.8;" alt="Empty">
+        <h3 style="font-family: var(--font-head); margin-bottom: 10px;">No Results Found</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">Try adjusting your filters.</p>
+        <button class="btn-primary" onclick="checkLoginAndOpenModal()"><i class="fas fa-upload"></i> Upload Now</button>
       </div>`;
     return;
   }
