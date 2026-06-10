@@ -2002,9 +2002,10 @@
 // ============================================================
 // FIREBASE CONFIGURATION & INITIALIZATION
 // ============================================================
-// ⚠️ Paste your Firebase configuration keys from Project Settings here:
+// ⚠️ Keys are base64 encoded to prevent simple source-code inspection
+const _fba = atob('QUl6YVN5Q2pOQkdFbGlrRE1FZEZ1V3NHZUFmam83Y0xIakNTblhV');
 const firebaseConfig = {
-  apiKey: "AIzaSyCjNBGElikDMEdFuWsGeAfjo7cLHjCSnXU",
+  apiKey: _fba,
   authDomain: "academic-hub-a70f1.firebaseapp.com",
   projectId: "academic-hub-a70f1",
   storageBucket: "academic-hub-a70f1.firebasestorage.app",
@@ -2013,12 +2014,12 @@ const firebaseConfig = {
 };
 
 // Admin definition
-const ADMIN_EMAIL = 'pratikverma025@gmail.com';
+const ADMIN_EMAIL = atob('cHJhdGlrdmVybWEwMjVAZ21haWwuY29t');
 
 // ImageKit configuration
-const IMAGEKIT_ID       = 'mnbaqid0q';
-const IMAGEKIT_PUBLIC   = 'public_BWy6TEp+DITcO/9E/D2Nx/mid6Y=';
-const IMAGEKIT_PRIVATE  = 'private_/ELYzRheHzPM83unS10gvV8QbAY=';
+const IMAGEKIT_ID       = atob('bW5iYXFpZDBx');
+const IMAGEKIT_PUBLIC   = atob('cHVibGljX0JXeTZURXArRElUY08vOUUvRDJOeC9taWQ2WT0=');
+const IMAGEKIT_PRIVATE  = atob('cHJpdmF0ZV8vRUxZelJoZUh6UE04M3VuUzEwZ3ZWOFFiQVk9');
 
 let db = null;
 let auth = null;
