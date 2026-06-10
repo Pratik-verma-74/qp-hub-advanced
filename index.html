@@ -10,6 +10,9 @@
 <!-- ✅ JSZip for ZIP download feature -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+<!-- ✅ jsPDF for Image to PDF conversion -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <!-- ✅ Firebase Compat SDKs (Production Ready) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -2552,7 +2555,15 @@ function renderCategoryStats() {
       
       const card = document.createElement('div');
       card.className = 'file-card glass';
+      card.style.position = 'relative'; // Required for absolute positioned delete button
+      
+      const safeUrl = escapeAttr(f.url || '#');
+      const safeName = escapeAttr(f.name || 'file');
+      
+      const deleteHtml = isAdmin ? `<button onclick="event.stopPropagation(); deleteFile('${f.id}')" style="position:absolute; right:10px; top:10px; background:rgba(255,0,0,0.2); color:red; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; z-index:10;" title="Delete File"><i class="fas fa-trash"></i></button>` : '';
+
       card.innerHTML = `
+        ${deleteHtml}
         <img src="${iconUrl}" class="file-icon" alt="File">
         <div class="file-info" style="margin-top:0;">
           <div class="file-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${f.name}</div>
@@ -2562,7 +2573,7 @@ function renderCategoryStats() {
           </div>
         </div>
       `;
-      card.onclick = () => openPreviewModal(f);
+      card.onclick = () => openPreviewModal(safeUrl, safeName, f.fileType, f.id);
       slider.appendChild(card);
   });
 }
@@ -2793,16 +2804,88 @@ function removeSelectedFile(idx) {
   if (selectedFiles.length === 0) document.getElementById('fileInput').value = '';
 }
 
-function handleFilesSelected(files) {
+async function mergeImagesToPDF(imageFiles) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        
+        // Read image as Data URL
+        const dataUrl = await new Promise(r => {
+          const reader = new FileReader();
+          reader.onload = e => r(e.target.result);
+          reader.readAsDataURL(file);
+        });
+        
+        // Get natural image dimensions
+        const imgProps = await new Promise(r => {
+          const img = new Image();
+          img.onload = () => r({ width: img.width, height: img.height });
+          img.src = dataUrl;
+        });
+        
+        // Calculate scaling (fit within A4)
+        const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
+        const width = imgProps.width * ratio;
+        const height = imgProps.height * ratio;
+        const x = (pdfWidth - width) / 2;
+        const y = (pdfHeight - height) / 2;
+
+        if (i > 0) pdf.addPage();
+        
+        let format = 'JPEG';
+        if (file.type.includes('png')) format = 'PNG';
+        else if (file.type.includes('webp')) format = 'WEBP';
+        
+        pdf.addImage(dataUrl, format, x, y, width, height);
+      }
+      resolve(pdf.output('blob'));
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+async function handleFilesSelected(files) {
   let skipped = 0;
+  const imageFiles = [];
+  const otherFiles = [];
+
   Array.from(files).forEach(file => {
     if (file.size > 100 * 1024 * 1024) { skipped++; return; }
     const category = classifyFile(file);
     if (!category) { skipped++; return; }
+    
     if (!selectedFiles.some(sf => sf.file.name === file.name && sf.file.size === file.size)) {
-      selectedFiles.push({ file, category });
+       if (category === 'image') imageFiles.push(file);
+       else otherFiles.push({ file, category });
     }
   });
+
+  // Automatically merge multiple images into one PDF
+  if (imageFiles.length > 1) {
+    showToast('info', 'Merging Images', `Please wait, combining ${imageFiles.length} images into a single PDF...`);
+    try {
+      const pdfBlob = await mergeImagesToPDF(imageFiles);
+      const pdfFile = new File([pdfBlob], `Merged_Images_${Date.now()}.pdf`, { type: 'application/pdf' });
+      selectedFiles.push({ file: pdfFile, category: 'pdf' });
+      showToast('success', 'Merge Complete', 'Images successfully converted to PDF.');
+    } catch (err) {
+      console.error("PDF Merge Failed:", err);
+      showToast('error', 'Merge Failed', 'Could not convert images to PDF. Adding them individually.');
+      imageFiles.forEach(file => selectedFiles.push({ file, category: 'image' }));
+    }
+  } else if (imageFiles.length === 1) {
+    selectedFiles.push({ file: imageFiles[0], category: 'image' });
+  }
+
+  otherFiles.forEach(item => selectedFiles.push(item));
+
   if (skipped > 0) showToast('error', 'Skipped Files', `${skipped} file(s) skipped (unsupported or >100MB).`);
   renderMultiFileList();
 }
