@@ -3740,15 +3740,15 @@ async function sendChatMessage() {
   }
 
   try {
-    const groqKey = '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';
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const openaiKey = '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';
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${groqKey}`,
+        'Authorization': `Bearer ${openaiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: buildSystemPrompt() + '\n\nIMPORTANT: You must act as a 15-year experienced expert. Reply as a very close friend. ALWAYS match the exact language and tone the user is using (e.g. Hindi, Hinglish, English, or slang) perfectly. Be extremely helpful, wise, and friendly.' },
           ...chatHistory
