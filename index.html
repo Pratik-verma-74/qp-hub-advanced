@@ -2000,9 +2000,28 @@
 'use strict';
 
 // ============================================================
+// SECURITY & ANTI-INSPECTION
+// ============================================================
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', function(e) {
+  if (e.keyCode == 123) { e.preventDefault(); return false; } // F12
+  if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) { e.preventDefault(); return false; } // Ctrl+Shift+I/J
+  if (e.ctrlKey && e.keyCode == 85) { e.preventDefault(); return false; } // Ctrl+U
+});
+
+function hashEmail(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return hash;
+}
+
+// ============================================================
 // FIREBASE CONFIGURATION & INITIALIZATION
 // ============================================================
-// ⚠️ Keys are base64 encoded to prevent simple source-code inspection
+// ⚠️ Keys are base64 encoded and chunked to prevent simple source-code inspection
 const _fba = atob('QUl6YVN5Q2pOQkdFbGlrRE1FZEZ1V3NHZUFmam83Y0xIakNTblhV');
 const firebaseConfig = {
   apiKey: _fba,
@@ -2013,13 +2032,18 @@ const firebaseConfig = {
   appId: "1:76238913687:web:356b292bb690d8460269d2"
 };
 
-// Admin definition
-const ADMIN_EMAIL = atob('cHJhdGlrdmVybWEwMjVAZ21haWwuY29t');
+// Admin definition (Hashed to prevent email extraction)
+const ADMIN_HASH = 1859646308;
+const DEMO_HASH  = -1820310142;
 
 // ImageKit configuration
 const IMAGEKIT_ID       = atob('bW5iYXFpZDBx');
 const IMAGEKIT_PUBLIC   = atob('cHVibGljX0JXeTZURXArRElUY08vOUUvRDJOeC9taWQ2WT0=');
-const IMAGEKIT_PRIVATE  = atob('cHJpdmF0ZV8vRUxZelJoZUh6UE04M3VuUzEwZ3ZWOFFiQVk9');
+const _ik1 = 'cHJpdmF0ZV8v';
+const _ik2 = 'RUxZelJoZUh6';
+const _ik3 = 'UE04M3VuUzEw';
+const _ik4 = 'Z3ZWOFFiQVk9';
+const IMAGEKIT_PRIVATE  = atob(_ik1 + _ik2 + _ik3 + _ik4);
 
 let db = null;
 let auth = null;
@@ -2064,7 +2088,7 @@ let currentCourseType = 'bca';
 let prefilledCourse   = null;
 let currentView       = 'categories'; // 'categories' | 'all' | 'groups'
 let currentUser       = null;  // Logged in user
-let isAdmin           = false; // True if currentUser email matches ADMIN_EMAIL
+let isAdmin           = false; // True if currentUser email hash matches ADMIN_HASH
 
 // ============================================================
 // INIT
@@ -2110,7 +2134,7 @@ function loginWithGoogle() {
     // Simulation: Log in as Admin so user can preview Admin features
     const demoUser = {
       displayName: "Pratik Verma (Demo)",
-      email: ADMIN_EMAIL,
+      email: "admin-demo@academichub.com",
       photoURL: "https://lh3.googleusercontent.com/a/default-user=s96-c"
     };
     handleAuthStateChanged(demoUser);
@@ -2161,7 +2185,7 @@ function handleAuthStateChanged(user) {
     document.getElementById('userEmail').textContent = user.email || '';
     
     // Check if admin email matches
-    isAdmin = (user.email === ADMIN_EMAIL);
+    isAdmin = (hashEmail(user.email) === ADMIN_HASH || hashEmail(user.email) === DEMO_HASH);
     if (isAdmin) {
       adminPanelBtn.style.display = 'flex';
     } else {
