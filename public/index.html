@@ -1389,8 +1389,28 @@
 <header style="padding: 10px 20px; display: flex; justify-content: space-between; border-bottom: none; background: transparent;">
   <div style="display: flex; align-items: center; gap: 12px; position: relative;">
     <i class="fas fa-bars" style="font-size: 1.2rem; color: var(--text-primary); cursor: pointer;" onclick="document.getElementById('hamburgerMenu').style.display = document.getElementById('hamburgerMenu').style.display === 'none' ? 'block' : 'none'"></i>
-    <div id="hamburgerMenu" class="card-dropdown" style="left: 0; top: 40px; min-width: 160px; text-align: left; display: none; z-index: 999;">
+    <div id="hamburgerMenu" class="card-dropdown" style="left: 0; top: 40px; min-width: 200px; text-align: left; display: none; z-index: 999;">
+      <!-- Show when logged in -->
+      <div id="hamburgerAuthLinks" style="display: none;">
+        <div style="padding: 10px 12px; border-bottom: 1px solid var(--glass-border); font-size: 0.78rem;">
+          <div id="hamburgerUserName" style="font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+          <div id="hamburgerUserEmail" style="color: var(--text-muted); font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+        </div>
+        <a href="profile.html" style="text-decoration: none;"><button><i class="fas fa-user-circle"></i> My Profile</button></a>
+        <a href="leaderboard.html" style="text-decoration: none;"><button><i class="fas fa-trophy" style="color: #f59e0b;"></i> Leaderboard</button></a>
+        <a href="quiz.html" style="text-decoration: none;"><button><i class="fas fa-brain" style="color: #b58eff;"></i> AI Quiz</button></a>
+        <a href="rankcard.html" style="text-decoration: none;"><button><i class="fas fa-id-badge" style="color: #6fbaff;"></i> My Rank Card</button></a>
+        <div style="height: 1px; background: var(--glass-border); margin: 4px 0;"></div>
+      </div>
+      
+      <!-- Always show theme -->
       <button id="themeToggle" title="Toggle theme"><i class="fas fa-moon" id="themeIcon"></i> Theme</button>
+      
+      <!-- Show when logged out -->
+      <button id="hamburgerLoginBtn" onclick="window.location.href='login.html'" style="display: none; color: var(--accent-1);"><i class="fas fa-sign-in-alt"></i> Login</button>
+      
+      <!-- Show when logged in -->
+      <button id="hamburgerLogoutBtn" onclick="logout()" style="display: none; color: var(--error);"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
     <a class="header-brand" href="#top" style="gap: 8px; margin: 0;">
       <div class="brand-icon" style="width: 36px; height: 36px; border-radius: 10px;"><i class="fas fa-graduation-cap" style="font-size: 16px;"></i></div>
@@ -2219,6 +2239,13 @@ function handleAuthStateChanged(user) {
     document.getElementById('userName').textContent = user.displayName || 'Student';
     document.getElementById('userEmail').textContent = user.email || '';
     
+    // Hamburger Menu Sync
+    document.getElementById('hamburgerAuthLinks').style.display = 'block';
+    document.getElementById('hamburgerLogoutBtn').style.display = 'block';
+    document.getElementById('hamburgerLoginBtn').style.display = 'none';
+    document.getElementById('hamburgerUserName').textContent = user.displayName || 'Student';
+    document.getElementById('hamburgerUserEmail').textContent = user.email || '';
+    
     // Check if admin email matches
     isAdmin = (hashEmail(user.email) === ADMIN_HASH || hashEmail(user.email) === DEMO_HASH);
     if (isAdmin) {
@@ -2230,6 +2257,12 @@ function handleAuthStateChanged(user) {
     loginBtn.style.display = 'flex';
     userProfile.style.display = 'none';
     adminPanelBtn.style.display = 'none';
+    
+    // Hamburger Menu Sync
+    document.getElementById('hamburgerAuthLinks').style.display = 'none';
+    document.getElementById('hamburgerLogoutBtn').style.display = 'none';
+    document.getElementById('hamburgerLoginBtn').style.display = 'block';
+    
     isAdmin = false;
   }
   
