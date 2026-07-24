@@ -1380,7 +1380,7 @@
     </div>
 
     <div id="authContainer" style="display: flex; align-items: center; position: relative;">
-      <button class="btn-upload-header ripple-container" id="loginBtn" onclick="loginWithGoogle()" style="display:none; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none; padding: 6px 12px; font-size: 0.8rem;"><i class="fab fa-google" style="color: #4285F4; margin-right: 4px;"></i><span>Login</span></button>
+      <button class="btn-upload-header ripple-container" id="loginBtn" onclick="window.location.href='login.html'" style="display:none; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none; padding: 6px 12px; font-size: 0.8rem;"><i class="fas fa-sign-in-alt" style="color: var(--accent-1); margin-right: 4px;"></i><span>Login</span></button>
       <div id="userProfile" style="display: flex; align-items: center; cursor: pointer; position: relative; margin-left: 4px;">
         <img id="userAvatar" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="User Avatar" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent-1); object-fit: cover;" onclick="toggleAuthDropdown(event)" />
         <div id="authDropdown" class="card-dropdown" style="right: 0; top: 46px; min-width: 180px; text-align: left; display: none;">
@@ -2037,13 +2037,8 @@ const ADMIN_HASH = 1859646308;
 const DEMO_HASH  = -1820310142;
 
 // ImageKit configuration
-const IMAGEKIT_ID       = atob('bW5iYXFpZDBx');
-const IMAGEKIT_PUBLIC   = atob('cHVibGljX0JXeTZURXArRElUY08vOUUvRDJOeC9taWQ2WT0=');
-const _ik1 = 'cHJpdmF0ZV8v';
-const _ik2 = 'RUxZelJoZUh6';
-const _ik3 = 'UE04M3VuUzEw';
-const _ik4 = 'Z3ZWOFFiQVk9';
-const IMAGEKIT_PRIVATE  = atob(_ik1 + _ik2 + _ik3 + _ik4);
+const IMAGEKIT_ID       = '';
+const IMAGEKIT_PUBLIC   = 'public_YMxLOow/wb4b0vlMruhcMDYjCY0=';
 
 let db = null;
 let auth = null;
@@ -2865,7 +2860,7 @@ dropZone.addEventListener('drop', e => {
 // Uploads file to ImageKit using REST API
 // ============================================================
 function uploadSingleToImageKit(file, publicId, onProgress) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if (!isFirebaseActive) {
       // Offline Simulation mode
       let pct = 0;
@@ -2880,43 +2875,60 @@ function uploadSingleToImageKit(file, publicId, onProgress) {
       return;
     }
 
-    const endpoint = `https://upload.imagekit.io/api/v1/files/upload`;
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('fileName', publicId);
-    formData.append('useUniqueFileName', 'false');
-    formData.append('folder', '/academic-hub');
+    try {
+      // 1. Fetch secure authentication parameters from our new backend
+      const authRes = await fetch('/api/imagekit/auth');
+      if (!authRes.ok) throw new Error('Failed to get auth params from server');
+      const authData = await authRes.json();
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', endpoint);
-    xhr.setRequestHeader('Authorization', 'Basic ' + btoa(IMAGEKIT_PRIVATE + ':'));
+      // 2. Upload file securely to ImageKit
+      const endpoint = `https://upload.imagekit.io/api/v1/files/upload`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', publicId);
+      formData.append('useUniqueFileName', 'false');
+      formData.append('folder', '/academic-hub');
+      
+      // Add secure auth fields
+      formData.append('publicKey', IMAGEKIT_PUBLIC);
+      formData.append('signature', authData.signature);
+      formData.append('expire', authData.expire);
+      formData.append('token', authData.token);
 
-    xhr.upload.onprogress = e => {
-      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
-    };
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', endpoint);
+      // NOTE: No Authorization header needed anymore! Safe from CORS and leaks.
 
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        try {
-          const res = JSON.parse(xhr.responseText);
-          if (res.url) {
-            resolve({ secureUrl: res.url, cloudPublicId: res.fileId || publicId, resourceType: res.fileType || 'auto' });
-          } else {
-            reject(new Error('No URL in ImageKit response'));
-          }
-        } catch { reject(new Error('Failed to parse ImageKit response')); }
-      } else {
-        try {
-          const err = JSON.parse(xhr.responseText);
-          reject(new Error(err.message || err.help || `HTTP ${xhr.status}`));
-        } catch { reject(new Error(`Upload failed — HTTP ${xhr.status}`)); }
-      }
-    };
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
 
-    xhr.onerror   = () => reject(new Error('Network error — check internet connection'));
-    xhr.ontimeout = () => reject(new Error('Upload timed out'));
-    xhr.timeout   = 120000;
-    xhr.send(formData);
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          try {
+            const res = JSON.parse(xhr.responseText);
+            if (res.url) {
+              resolve({ secureUrl: res.url, cloudPublicId: res.fileId || publicId, resourceType: res.fileType || 'auto' });
+            } else {
+              reject(new Error('No URL in ImageKit response'));
+            }
+          } catch { reject(new Error('Failed to parse ImageKit response')); }
+        } else {
+          try {
+            const err = JSON.parse(xhr.responseText);
+            reject(new Error(err.message || err.help || `HTTP ${xhr.status}`));
+          } catch { reject(new Error(`Upload failed — HTTP ${xhr.status}`)); }
+        }
+      };
+
+      xhr.onerror   = () => reject(new Error('Network error — check internet connection'));
+      xhr.ontimeout = () => reject(new Error('Upload timed out'));
+      xhr.timeout   = 120000;
+      xhr.send(formData);
+
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -3974,10 +3986,9 @@ function openPreviewModal(url, name, fileType, paperId) {
     if (fileType === 'image') {
       docContainer.innerHTML = `<img src="${url}" alt="${name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
     } else if (fileType === 'pdf') {
-      const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
       docContainer.innerHTML = `
         <div style="width:100%; height:100%; display:flex; flex-direction:column;">
-          <iframe src="${gviewUrl}" style="flex:1; width:100%; border:none; border-radius:8px 8px 0 0;" title="PDF Preview"></iframe>
+          <iframe src="${url}" type="application/pdf" style="flex:1; width:100%; border:none; border-radius:8px 8px 0 0;" title="PDF Preview"></iframe>
           <div style="background:rgba(255,255,255,0.05); padding:8px 10px; text-align:center; font-size:0.75rem; border-top:1px solid var(--glass-border); display:flex; justify-content:center; gap:15px; align-items:center;">
             <span style="color:var(--text-muted);">Preview issue?</span>
             <a href="${url}" target="_blank" style="color:var(--accent-2); text-decoration:none; font-weight:600;"><i class="fas fa-external-link-alt"></i> Open PDF directly</a>
