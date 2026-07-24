@@ -3946,7 +3946,8 @@ function renderCarouselSlide() {
   if (ft === 'image') {
       contentHtml = `<img src="${safeUrl}" alt="${safeName}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
   } else if (ft === 'pdf' || ft === 'doc') {
-      const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(safeUrl)}&embedded=true`;
+      const rawUrl = file.url || '#';
+      const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(rawUrl)}&embedded=true`;
       contentHtml = `<iframe src="${gviewUrl}" style="width:100%; height:100%; border:none; border-radius:8px;" title="Document Preview"></iframe>`;
   } else {
       contentHtml = `<div style="text-align:center; color:var(--text-secondary); padding:20px;">Unsupported file type</div>`;
@@ -4069,9 +4070,10 @@ function openPreviewModal(url, name, fileType, paperId) {
     if (fileType === 'image') {
       docContainer.innerHTML = `<img src="${url}" alt="${name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
     } else if (fileType === 'pdf') {
+      const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
       docContainer.innerHTML = `
         <div style="width:100%; height:100%; display:flex; flex-direction:column;">
-          <iframe src="${url}" type="application/pdf" style="flex:1; width:100%; border:none; border-radius:8px 8px 0 0;" title="PDF Preview"></iframe>
+          <iframe src="${gviewUrl}" style="flex:1; width:100%; border:none; border-radius:8px 8px 0 0;" title="PDF Preview"></iframe>
           <div style="background:rgba(255,255,255,0.05); padding:8px 10px; text-align:center; font-size:0.75rem; border-top:1px solid var(--glass-border); display:flex; justify-content:center; gap:15px; align-items:center;">
             <span style="color:var(--text-muted);">Preview issue?</span>
             <a href="${url}" target="_blank" style="color:var(--accent-2); text-decoration:none; font-weight:600;"><i class="fas fa-external-link-alt"></i> Open PDF directly</a>
