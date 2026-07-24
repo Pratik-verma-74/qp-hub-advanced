@@ -2,9 +2,14 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Student Question Paper Hub</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QPHub">
+<meta name="theme-color" content="#0a0c1a">
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-512x512.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 <!-- ✅ JSZip for ZIP download feature -->
@@ -1113,8 +1118,10 @@
 
   /* ===== RESPONSIVENESS ===== */
   @media (max-width: 768px) {
-    header { gap: 10px; padding: 0 16px; }
-    .header-brand { gap: 8px; }
+    header { gap: 6px; padding: 0 10px; }
+    .header-actions { gap: 6px; }
+    #userAvatar { width: 30px !important; height: 30px !important; margin-left: 2px !important; }
+    .header-brand { gap: 6px; }
     .brand-title { font-size: 1.05rem; }
     .hero-stats { display: none; }
     #uploadHeaderBtn { display: none !important; }
