@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QPHub">
+    <meta name="theme-color" content="#0a0c1a">
+    <link rel="apple-touch-icon" href="icon-512x512.png">
+    <title>User Login - QPHub</title>
     <link rel="manifest" href="manifest.json">
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -293,9 +298,10 @@
 
         /* Mobile responsiveness */
         @media (max-width: 480px) {
+            body { overflow-x: hidden; padding-bottom: 20px; }
             .login-box {
-                width: 90%;
-                padding: 40px 30px;
+                width: 95%;
+                padding: 40px 20px;
             }
         }
     </style>
@@ -448,7 +454,13 @@
     if (user) {
       window.location.href = 'index.html';
     }
-  });
-</script>
+    </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW fail: ', err));
+        });
+      }
+    </script>
 </body>
 </html>

@@ -2,7 +2,12 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QPHub">
+<meta name="theme-color" content="#0a0c1a">
+<link rel="apple-touch-icon" href="icon-512x512.png">
 <title>My Profile - Student Question Paper Hub</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -172,6 +177,12 @@
   .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (max-width: 768px) {
+    body { overflow-x: hidden; padding-bottom: 90px; }
+    header { padding: 0 10px; gap: 6px; }
+    .header-actions { gap: 6px; }
+    #userAvatar { width: 30px !important; height: 30px !important; margin-left: 2px !important; }
+    .header-brand { gap: 6px; }
+    .brand-title { font-size: 1.05rem; }
     #previewModalBody { flex-direction: column; overflow-y: auto !important; }
     #previewDocContainer { flex: none !important; height: 50vh !important; }
     #previewCommentsContainer { flex: none !important; height: 38vh !important; }

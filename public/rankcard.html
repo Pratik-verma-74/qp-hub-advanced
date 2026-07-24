@@ -2,7 +2,12 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QPHub">
+<meta name="theme-color" content="#0a0c1a">
+<link rel="apple-touch-icon" href="icon-512x512.png">
 <title>My Rank Card | QPHub</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -178,6 +183,14 @@
   .skeleton-text.medium { width: 65%; }
   .skeleton-text.long { width: 90%; }
   .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+  @media (max-width: 768px) {
+    body { overflow-x: hidden; padding-bottom: 20px; }
+    header { padding: 0 10px; gap: 6px; }
+    .header-actions { gap: 6px; }
+    .header-brand { gap: 6px; }
+    .brand-title { font-size: 1.05rem; }
+    .card-wrapper { transform: scale(0.9); }
+  }
 </style>
 <!-- SECURITY: Anti-Inspect & Data Protection -->
 <script>
@@ -484,6 +497,13 @@
       }).catch(err => {
         console.log('SW registration failed: ', err);
       });
+    });
+  }
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW fail: ', err));
     });
   }
 </script>
