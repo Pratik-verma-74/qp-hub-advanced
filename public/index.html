@@ -91,15 +91,20 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+    width: 100%;
+  }
   html { scroll-behavior: smooth; font-size: 16px; }
   body {
     font-family: var(--font-main);
     background: var(--bg-base);
     color: var(--text-primary);
     min-height: 100vh;
-    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     transition: background 0.4s, color 0.4s;
+    position: relative;
   }
   body::before {
     content: ''; position: fixed; inset: 0; z-index: 0;
