@@ -1441,30 +1441,39 @@ async function loadThumbnail(container) {
                            <div class="badge">IMG</div>`;
   } else if (ft === 'pdf') {
     try {
-      if (!window.pdfjsLib) {
-         const script = document.createElement('script');
-         script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-         document.head.appendChild(script);
-         await new Promise((res, rej) => { script.onload = res; script.onerror = rej; });
-         window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      }
-      
-      const loadingTask = window.pdfjsLib.getDocument(url);
-      const pdf = await loadingTask.promise;
-      const page = await pdf.getPage(1); // Thumbnail is just page 1
-      const viewport = page.getViewport({scale: 1.0}); // lower scale for thumbnail
-      
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      
-      await page.render({ canvasContext: context, viewport: viewport }).promise;
+      const loadPdfPromise = (async () => {
+        if (!window.pdfjsLib) {
+          await new Promise(resolve => {
+             const check = setInterval(() => {
+                 if (window.pdfjsLib) { clearInterval(check); resolve(); }
+             }, 100);
+          });
+        }
+        const loadingTask = window.pdfjsLib.getDocument(url);
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({scale: 1.0});
+        
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        return canvas;
+      })();
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('PDF loading timeout')), 10000)
+      );
+
+      const canvas = await Promise.race([loadPdfPromise, timeoutPromise]);
+
       container.innerHTML = '';
       container.appendChild(canvas);
       container.insertAdjacentHTML('beforeend', `<div class="badge">PDF</div>`);
     } catch(err) {
-      console.error('Thumb err:', err);
+      console.warn('Thumb err:', err.message);
       container.innerHTML = `<i class="fas fa-file-pdf" style="font-size:3rem; color:var(--accent-1);"></i><div class="badge">PDF</div>`;
     }
   } else {
@@ -1472,6 +1481,14 @@ async function loadThumbnail(container) {
   }
 }
 </script>
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window['pdfjs-dist/build/pdf']) {
+      window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+  </script>
 </head>
 <body>
 
@@ -4209,16 +4226,12 @@ async function renderPdfInline(url, containerId) {
 
   try {
     if (!window.pdfjsLib) {
-       const script = document.createElement('script');
-       script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-       document.head.appendChild(script);
-       await new Promise((resolve, reject) => {
-         script.onload = resolve;
-         script.onerror = reject;
-       });
-       window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      await new Promise(resolve => {
+         const check = setInterval(() => {
+             if (window.pdfjsLib) { clearInterval(check); resolve(); }
+         }, 100);
+      });
     }
-
     const loadingTask = window.pdfjsLib.getDocument(url);
     const pdf = await loadingTask.promise;
     
