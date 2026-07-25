@@ -5,7 +5,6 @@
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/imagekit/auth", "dest": "/api/imagekit/auth.js" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    { "src": "/(?!api/)(.*)", "dest": "/public/$1" }
   ]
 }
