@@ -2672,13 +2672,13 @@ function renderCategoryStats() {
   
   const now = new Date();
   
-  // Calculate stats
-  fileData.forEach(f => {
-     const c = f.course;
+  // Calculate stats based on groups instead of individual files
+  groups.forEach(g => {
+     const c = g.course;
      if (counts[c] !== undefined) {
          counts[c]++;
          
-         const fd = new Date(f.date);
+         const fd = new Date(g.date);
          if (!latestTimes[c] || fd > latestTimes[c]) {
              latestTimes[c] = fd;
          }
@@ -2688,7 +2688,8 @@ function renderCategoryStats() {
   // Update the UI
   Object.keys(counts).forEach(c => {
      const el = document.getElementById(`count-${c}`);
-     if (el) el.innerText = `${counts[c]} Papers`;
+     const textEl = el ? el : document.querySelector(`.category-card[onclick="openCategory('${c}')"] .category-count`);
+     if (textEl) textEl.innerText = `${counts[c]} Uploads`;
      
      // Check for "New" tag (within 48 hours)
      const card = document.querySelector(`.category-card[onclick="openCategory('${c}')"]`);
