@@ -1388,6 +1388,8 @@
   }, 1000);
 
 let thumbnailObserver;
+const thumbnailQueue = [];
+let isProcessingQueue = false;
 
 function initThumbnails() {
   if (thumbnailObserver) thumbnailObserver.disconnect();
@@ -1395,15 +1397,33 @@ function initThumbnails() {
   thumbnailObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        loadThumbnail(entry.target);
+        if (!entry.target.dataset.queued) {
+           entry.target.dataset.queued = 'true';
+           thumbnailQueue.push(entry.target);
+           processThumbnailQueue();
+        }
         thumbnailObserver.unobserve(entry.target);
       }
     });
   }, { rootMargin: '100px' });
   
   document.querySelectorAll('.feed-thumbnail').forEach(el => {
-    if (!el.dataset.loaded) thumbnailObserver.observe(el);
+    if (!el.dataset.loaded && !el.dataset.queued) thumbnailObserver.observe(el);
   });
+}
+
+async function processThumbnailQueue() {
+  if (isProcessingQueue || thumbnailQueue.length === 0) return;
+  isProcessingQueue = true;
+  
+  while (thumbnailQueue.length > 0) {
+    const container = thumbnailQueue.shift();
+    try {
+      await loadThumbnail(container);
+    } catch(e) { console.error('Queue item failed:', e); }
+  }
+  
+  isProcessingQueue = false;
 }
 
 async function loadThumbnail(container) {
