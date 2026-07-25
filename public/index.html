@@ -4051,12 +4051,10 @@ function renderCarouselSlide() {
   let contentHtml = '';
   if (ft === 'image') {
       contentHtml = `<img src="${safeUrl}" alt="${safeName}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
-  } else if (ft === 'doc') {
+  } else if (ft === 'doc' || ft === 'pdf') {
       const rawUrl = file.url || '#';
       const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(rawUrl)}&embedded=true`;
       contentHtml = `<iframe src="${gviewUrl}" style="width:100%; height:100%; border:none; border-radius:8px;" title="Document Preview"></iframe>`;
-  } else if (ft === 'pdf') {
-      contentHtml = `<div id="pdfViewerContainer_${file.id}" style="width:100%; height:100%; position:relative;"></div>`;
   } else {
       contentHtml = `<div style="text-align:center; color:var(--text-secondary); padding:20px;">Unsupported file type</div>`;
   }
@@ -4079,10 +4077,6 @@ function renderCarouselSlide() {
       ${contentHtml}
     </div>
   `;
-  
-  if (ft === 'pdf') {
-      renderPdfInline(file.url || '#', `pdfViewerContainer_${file.id}`);
-  }
 }
 
 function prevCarouselSlide(e) {
@@ -4181,10 +4175,7 @@ function openPreviewModal(url, name, fileType, paperId) {
   setTimeout(() => {
     if (fileType === 'image') {
       docContainer.innerHTML = `<img src="${url}" alt="${name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
-    } else if (fileType === 'pdf') {
-      docContainer.innerHTML = `<div id="pdfViewerContainer_Preview" style="width:100%; height:100%; position:relative;"></div>`;
-      renderPdfInline(url, 'pdfViewerContainer_Preview');
-    } else if (fileType === 'doc') {
+    } else if (fileType === 'pdf' || fileType === 'doc') {
       const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
       docContainer.innerHTML = `<iframe src="${gviewUrl}" style="width:100%; height:100%; border:none; border-radius:8px;" title="Document Preview"></iframe>`;
     } else {
