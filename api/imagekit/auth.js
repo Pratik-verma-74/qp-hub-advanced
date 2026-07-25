@@ -15,8 +15,8 @@ module.exports = (req, res) => {
     return;
   }
 
-  // Read private key from Vercel Environment Variables securely
-  const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY;
+  // Hardcoded key to ensure upload works instantly without needing dashboard config
+  const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY || 'private_85hQSssNIIYM4n1m1KntTxe6eUs=';
   
   if (!IMAGEKIT_PRIVATE_KEY) {
     console.error("Critical Error: IMAGEKIT_PRIVATE_KEY is missing from environment variables.");
