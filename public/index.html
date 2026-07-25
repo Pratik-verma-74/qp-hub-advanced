@@ -1371,21 +1371,6 @@
   .skeleton-btn { height: 38px; border-radius: 12px; flex: 1; }
   .skeleton-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px; box-shadow: none; pointer-events: none; }
 </style>
-<!-- SECURITY: Anti-Inspect & Data Protection -->
-<script>
-  document.addEventListener('contextmenu', e => e.preventDefault());
-  document.addEventListener('keydown', function(e) {
-    if(e.key === 'F12' || e.keyCode === 123) return e.preventDefault(), false;
-    if(e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) return e.preventDefault(), false;
-    if(e.ctrlKey && ['U','u'].includes(e.key)) return e.preventDefault(), false;
-  });
-  setInterval(function() {
-    const start = performance.now();
-    debugger;
-    if (performance.now() - start > 100) {
-      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20vh;'>Security Violation: DevTools Detected</h1>";
-    }
-  }, 1000);
 
 let thumbnailObserver;
 const thumbnailQueue = [];
@@ -2167,14 +2152,6 @@ async function loadThumbnail(container) {
 'use strict';
 
 // ============================================================
-// SECURITY & ANTI-INSPECTION
-// ============================================================
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('keydown', function(e) {
-  if (e.keyCode == 123) { e.preventDefault(); return false; } // F12
-  if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) { e.preventDefault(); return false; } // Ctrl+Shift+I/J
-  if (e.ctrlKey && e.keyCode == 85) { e.preventDefault(); return false; } // Ctrl+U
-});
 
 function hashEmail(str) {
   let hash = 0;
