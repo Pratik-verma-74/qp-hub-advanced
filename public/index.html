@@ -3711,9 +3711,11 @@ function buildGroupCard(g, idx) {
     ? `<button class="btn-icon-sq danger" onclick="deleteGroup('${g.id}')" title="Delete Collection"><i class="fas fa-trash-alt"></i></button>`
     : '';
 
+  const groupFiles = (g.fileIds || []).map(id => fileData.find(x => x.id === id)).filter(Boolean);
+
     return `
     <div class="new-file-card" style="animation-delay:${delay}s" id="gcard-${g.id}">
-      <div class="feed-thumbnail" data-fileid="${firstFile ? firstFile.id : ''}" data-filetype="${firstFile ? (firstFile.fileType||'pdf') : ''}" data-url="${firstFile ? escapeAttr(firstFile.url || '#') : ''}" onclick="openCarouselModal('${g.id}')">
+      <div class="feed-thumbnail" data-fileid="${firstFile ? firstFile.id : ''}" data-filetype="${firstFile ? (firstFile.fileType||'pdf') : ''}" data-url="${firstFile ? escapeAttr(firstFile.url || '#') : ''}" onclick="toggleGroupExpand('${g.id}')">
         <div class="spin"><i class="fas fa-circle-notch"></i></div>
         <div class="badge" style="background:var(--accent-1);">+${count} Papers</div>
       </div>
@@ -3723,7 +3725,8 @@ function buildGroupCard(g, idx) {
           <div class="card-menu" id="menu-${g.id}">
             <button class="card-menu-btn" onclick="toggleCardMenu('${g.id}',event)"><i class="fas fa-ellipsis-v"></i></button>
             <div class="card-dropdown">
-              <button onclick="openCarouselModal('${g.id}')"><i class="fas fa-eye"></i> View Collection</button>
+              <button onclick="toggleGroupExpand('${g.id}')"><i class="fas fa-list"></i> View Collection</button>
+              <button onclick="openCarouselModal('${g.id}')"><i class="fas fa-eye"></i> View Carousel</button>
               <button onclick="downloadGroupAsZip('${g.id}')"><i class="fas fa-file-archive"></i> Download ZIP</button>
               ${dropdownDeleteBtn}
             </div>
@@ -3738,9 +3741,14 @@ function buildGroupCard(g, idx) {
           <div class="nfc-meta-item"><i class="fas fa-calendar-alt" style="color:var(--accent-1)"></i> ${g.year || ''}</div>
         </div>
         <div class="nfc-bottom" style="margin-top:auto; display:flex; gap:8px;">
-          <button class="nfc-btn btn-dark" style="flex:1;" onclick="openCarouselModal('${g.id}')"><i class="fas fa-images"></i> View All</button>
+          <button class="nfc-btn btn-dark" style="flex:1;" onclick="toggleGroupExpand('${g.id}')"><i class="fas fa-list"></i> View All</button>
           <button class="nfc-btn" style="background:var(--accent-grad); color:white; padding:8px 16px; border-radius:12px; font-weight:600; font-size:0.85rem; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center;" onclick="downloadGroupAsZip('${g.id}')" title="Download ZIP"><i class="fas fa-download"></i></button>
           ${footerDeleteBtn}
+        </div>
+      </div>
+      <div class="group-expand-body" id="gexpand-${g.id}" style="display:none; padding:16px; border-top:1px solid var(--glass-border); background:rgba(0,0,0,0.2);">
+        <div class="group-files-grid">
+          ${groupFiles.map(f => buildMiniFileCard(f)).join('')}
         </div>
       </div>
     </div>
@@ -3870,6 +3878,17 @@ function toggleCardMenu(id, e) {
   if (!isOpen) menu.classList.add('open');
 }
 document.addEventListener('click', () => document.querySelectorAll('.card-menu.open').forEach(m => m.classList.remove('open')));
+
+function toggleGroupExpand(gId) {
+  const expandBody = document.getElementById(`gexpand-${gId}`);
+  if (expandBody) {
+    if (expandBody.style.display === 'none' || !expandBody.style.display) {
+      expandBody.style.display = 'block';
+    } else {
+      expandBody.style.display = 'none';
+    }
+  }
+}
 
 // Share Paper via WhatsApp or Email
 function shareFile(url, name, method) {
