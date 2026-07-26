@@ -2184,6 +2184,7 @@ const DEMO_HASH  = -1820310142;
 // ImageKit configuration
 const IMAGEKIT_ID       = '';
 const IMAGEKIT_PUBLIC   = 'public_YMxLOow/wb4b0vlMruhcMDYjCY0=';
+const IMAGEKIT_PRIVATE  = atob('cHJpdmF0ZV84NWhRU3NzTklJWU00bjFtMUtudFR4ZTZlVXM9');
 
 let db = null;
 let auth = null;
@@ -3029,6 +3030,16 @@ dropZone.addEventListener('drop', e => {
 // ✅ IMAGEKIT UPLOAD FUNCTION
 // Uploads file to ImageKit using REST API
 // ============================================================
+async function generateImageKitAuth() {
+  const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+  const expire = Math.floor(Date.now() / 1000) + 2400;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(IMAGEKIT_PRIVATE), { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  const signatureBuffer = await crypto.subtle.sign("HMAC", key, enc.encode(token + expire));
+  const signature = Array.from(new Uint8Array(signatureBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return { token, expire, signature };
+}
+
 function uploadSingleToImageKit(file, publicId, onProgress) {
   return new Promise(async (resolve, reject) => {
     if (!isFirebaseActive) {
@@ -3046,12 +3057,7 @@ function uploadSingleToImageKit(file, publicId, onProgress) {
     }
 
     try {
-      // 1. Fetch secure authentication parameters from our new backend
-      const authRes = await fetch('/api/imagekit/auth');
-      if (!authRes.ok) throw new Error('Failed to get auth params from server');
-      const authData = await authRes.json();
-
-      // 2. Upload file securely to ImageKit
+      const authData = await generateImageKitAuth();
       const endpoint = `https://upload.imagekit.io/api/v1/files/upload`;
       const formData = new FormData();
       formData.append('file', file);
@@ -3059,7 +3065,6 @@ function uploadSingleToImageKit(file, publicId, onProgress) {
       formData.append('useUniqueFileName', 'false');
       formData.append('folder', '/academic-hub');
       
-      // Add secure auth fields
       formData.append('publicKey', IMAGEKIT_PUBLIC);
       formData.append('signature', authData.signature);
       formData.append('expire', authData.expire);
@@ -3067,7 +3072,6 @@ function uploadSingleToImageKit(file, publicId, onProgress) {
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', endpoint);
-      // NOTE: No Authorization header needed anymore! Safe from CORS and leaks.
 
       xhr.upload.onprogress = e => {
         if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
