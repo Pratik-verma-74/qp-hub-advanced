@@ -1002,10 +1002,18 @@
           const chapter = document.getElementById('chapterSelect').value;
           const mode = document.getElementById('modeSelect').value;
 
+          let finalUserName = user.displayName || 'Anonymous Student';
+          try {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists && userDoc.data().customName) {
+              finalUserName = userDoc.data().customName;
+            }
+          } catch(e) { console.error("Error fetching custom name", e); }
+
           // 1. Prepare quiz data
           const quizData = {
             userId: user.uid,
-            userName: user.displayName || 'Anonymous Student',
+            userName: finalUserName,
             exam: exam,
             subject: subject,
             chapter: chapter,

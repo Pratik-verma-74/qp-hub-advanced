@@ -1511,6 +1511,7 @@ async function loadThumbnail(container) {
     </a>
   </div>
   <div class="header-actions">
+    <button class="btn-icon" id="pwaInstallBtn" title="Install App" style="display: none; background: transparent; border: none; font-size: 1.1rem; color: #4ade80;"><i class="fas fa-download"></i></button>
     <button class="btn-icon" onclick="document.getElementById('searchInput').focus()" style="background: transparent; border: none; font-size: 1.1rem;"><i class="fas fa-search"></i></button>
     <button class="btn-icon" id="adminPanelBtn" onclick="openAdminPanel()" title="Admin Dashboard" style="display: none; background: transparent; border: none; font-size: 1.1rem; color: var(--accent-3);"><i class="fas fa-user-shield"></i></button>
     <a href="leaderboard.html" style="text-decoration: none;"><button class="btn-icon" title="Leaderboard" style="background: transparent; border: none; color: #f59e0b; font-size: 1.1rem;"><i class="fas fa-trophy"></i></button></a>
@@ -1542,6 +1543,7 @@ async function loadThumbnail(container) {
             <div id="userEmail" style="color: var(--text-muted); font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 156px;"></div>
           </div>
           <a href="profile.html" style="text-decoration: none;"><button><i class="fas fa-user-circle"></i> My Profile</button></a>
+          <a href="#" onclick="openSettingsModal(); return false;" style="text-decoration: none;"><button><i class="fas fa-cog" style="color: #4ade80;"></i> Settings</button></a>
           <a href="leaderboard.html" style="text-decoration: none;"><button><i class="fas fa-trophy" style="color: #f59e0b;"></i> Leaderboard</button></a>
           <a href="quiz.html" style="text-decoration: none;"><button><i class="fas fa-brain" style="color: #b58eff;"></i> AI Quiz</button></a>
           <a href="rankcard.html" style="text-decoration: none;"><button><i class="fas fa-id-badge" style="color: #6fbaff;"></i> My Rank Card</button></a>
@@ -1906,11 +1908,11 @@ async function loadThumbnail(container) {
     </div>
 
     <!-- Drop zone — multiple attribute for multi-select -->
-    <div class="drop-zone" id="dropZone">
-      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple />
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="cursor: pointer;">
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple style="display: none;" />
       <div class="drop-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-      <h4>Drag & drop files here</h4>
-      <p>PDF, DOCX, JPG, PNG · Multiple files = One Group · Max 20MB each</p>
+      <h4>Tap or Drag & drop files here</h4>
+      <p>PDF, DOCX, JPG, PNG · Multiple files = One Group · Max 50MB each</p>
     </div>
 
     <!-- ✅ Group label pill — shown after files are selected -->
@@ -2044,6 +2046,23 @@ async function loadThumbnail(container) {
           <!-- Rows will be injected dynamically -->
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div class="modal-overlay" id="settingsModalOverlay">
+  <div class="modal glass" style="max-width: 400px;">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-cog"></i> Profile Settings</div>
+      <button class="modal-close" onclick="closeSettingsModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding: 20px;">
+      <div class="form-group">
+        <label style="margin-bottom: 8px; display: block; color: var(--text-secondary); font-size: 0.85rem;">Display Name (Used in Leaderboard)</label>
+        <input type="text" id="customNameInput" placeholder="Enter your display name" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; color: white; font-family: var(--font-main);" />
+      </div>
+      <button class="btn-primary" onclick="saveCustomProfile(event)" style="width: 100%; padding: 12px; margin-top: 15px; border-radius: 8px; font-weight: bold;"><i class="fas fa-save"></i> Save Settings</button>
     </div>
   </div>
 </div>
@@ -2327,6 +2346,17 @@ function handleAuthStateChanged(user) {
     document.getElementById('userAvatar').src = customAvatar || user.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
     document.getElementById('userName').textContent = user.displayName || 'Student';
     document.getElementById('userEmail').textContent = user.email || '';
+
+    // Fetch custom profile
+    if (isFirebaseActive) {
+      db.collection('users').doc(user.uid).get().then(doc => {
+        if (doc.exists && doc.data().customName) {
+          customProfileName = doc.data().customName;
+          document.getElementById('userName').textContent = customProfileName;
+          document.getElementById('hamburgerUserName').textContent = customProfileName;
+        }
+      }).catch(err => console.error("Error fetching profile:", err));
+    }
     
     // Hamburger Menu Sync
     document.getElementById('hamburgerAuthLinks').style.display = 'block';
@@ -3002,14 +3032,14 @@ function removeSelectedFile(idx) {
 function handleFilesSelected(files) {
   let skipped = 0;
   Array.from(files).forEach(file => {
-    if (file.size > 100 * 1024 * 1024) { skipped++; return; }
+    if (file.size > 50 * 1024 * 1024) { skipped++; return; }
     const category = classifyFile(file);
     if (!category) { skipped++; return; }
     if (!selectedFiles.some(sf => sf.file.name === file.name && sf.file.size === file.size)) {
       selectedFiles.push({ file, category });
     }
   });
-  if (skipped > 0) showToast('error', 'Skipped Files', `${skipped} file(s) skipped (unsupported or >100MB).`);
+  if (skipped > 0) showToast('error', 'Skipped Files', `${skipped} file(s) skipped (unsupported or >50MB).`);
   renderMultiFileList();
 }
 
@@ -4338,6 +4368,66 @@ async function postComment() {
   } catch (err) {
     console.error("Post comment error:", err);
     showToast('error', 'Post Failed', err.message);
+  }
+}
+
+// --- PWA Installation ---
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('pwaInstallBtn').style.display = 'inline-block';
+});
+document.getElementById('pwaInstallBtn').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      document.getElementById('pwaInstallBtn').style.display = 'none';
+    }
+    deferredPrompt = null;
+  }
+});
+
+// --- Profile Settings ---
+let customProfileName = null;
+
+function openSettingsModal() {
+  document.getElementById('authDropdown').style.display = 'none';
+  document.getElementById('customNameInput').value = customProfileName || (currentUser ? currentUser.displayName : '');
+  document.getElementById('settingsModalOverlay').classList.add('open');
+}
+function closeSettingsModal() {
+  document.getElementById('settingsModalOverlay').classList.remove('open');
+}
+
+async function saveCustomProfile(event) {
+  if (!currentUser) return;
+  const newName = document.getElementById('customNameInput').value.trim();
+  if (!newName) {
+    showToast('error', 'Error', 'Name cannot be empty.');
+    return;
+  }
+  const btn = event.currentTarget;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  
+  try {
+    await db.collection('users').doc(currentUser.uid).set({
+      customName: newName,
+      email: currentUser.email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    
+    customProfileName = newName;
+    document.getElementById('userName').textContent = newName;
+    document.getElementById('hamburgerUserName').textContent = newName;
+    showToast('success', 'Success', 'Profile settings updated successfully!');
+    closeSettingsModal();
+  } catch(err) {
+    console.error("Error saving profile:", err);
+    showToast('error', 'Error', 'Failed to save settings.');
+  } finally {
+    btn.innerHTML = '<i class="fas fa-save"></i> Save Settings';
   }
 }
 
