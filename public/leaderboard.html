@@ -507,8 +507,15 @@
 
       let html = '';
       let rank = 1;
+      const seenUsers = new Set();
+
       snapshot.forEach(doc => {
         const data = doc.data();
+        const uid = data.userId || data.userName || 'anonymous';
+        
+        if (seenUsers.has(uid)) return; // Only take their highest score
+        seenUsers.add(uid);
+
         let avatarCls = '';
         let avatarContent = `<i class="fas fa-brain"></i>`;
         
@@ -524,7 +531,7 @@
               <div class="user-avatar ${avatarCls}">${avatarContent}</div>
               <div class="user-info">
                 <div class="user-name">${data.userName || 'Anonymous Student'}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">${data.difficulty || 'Normal'} Level</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${data.difficulty || data.mode || 'Normal'} Level</div>
               </div>
             </div>
             <div class="col-exam">

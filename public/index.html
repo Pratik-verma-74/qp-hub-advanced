@@ -1575,7 +1575,10 @@ async function loadThumbnail(container) {
     <p class="sub">Upload, search and download previous year question papers for all courses — all in one smart, student-friendly platform.</p>
     <div class="hero-notice">
       <i class="fas fa-bullhorn" style="color: var(--accent-1);"></i> Before uploading, check for duplicates. Share your previous year papers — your upload helps other students! 🙏<br>
-      <div style="text-align: right; margin-top: 4px;">— Pratik Verma</div>
+      <div style="text-align: right; margin-top: 8px; font-size: 0.9em;">
+        <span style="color: var(--text-muted); font-style: italic;">Under the Guidance of <strong>Ashish Sir</strong></span><br>
+        — Pratik Verma
+      </div>
     </div>
     <!-- Book Illustration Placeholder (could be image) -->
     <img src="https://cdn3d.iconscout.com/3d/premium/thumb/graduation-books-5401948-4521404.png" class="hero-books-img" alt="Books" onerror="this.style.display='none'" />
@@ -4158,7 +4161,10 @@ function openPreviewModal(url, name, fileType, paperId) {
   setTimeout(() => {
     if (fileType === 'image') {
       docContainer.innerHTML = `<img src="${url}" alt="${name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />`;
-    } else if (fileType === 'pdf' || fileType === 'doc') {
+    } else if (fileType === 'pdf') {
+      docContainer.innerHTML = '';
+      renderPdfInline(url, 'previewDocContainer');
+    } else if (fileType === 'doc') {
       const gviewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
       docContainer.innerHTML = `<iframe src="${gviewUrl}" style="width:100%; height:100%; border:none; border-radius:8px;" title="Document Preview"></iframe>`;
     } else {

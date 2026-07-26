@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qphub-cache-v5';
+const CACHE_NAME = 'qphub-cache-v6';
 const urlsToCache = [
   './index.html',
   './profile.html',
