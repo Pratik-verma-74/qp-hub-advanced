@@ -2749,7 +2749,7 @@ function renderCategoryStats() {
           const safeUrl = escapeAttr(f.url || '#');
           const safeName = escapeAttr(f.name || 'file');
           
-          const deleteHtml = isAdmin ? `<button onclick="event.stopPropagation(); deleteFile('${f.id}')" style="position:absolute; right:10px; top:10px; background:rgba(255,0,0,0.2); color:red; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; z-index:10;" title="Delete File"><i class="fas fa-trash"></i></button>` : '';
+          const deleteHtml = '';
 
           card.innerHTML = `
             ${deleteHtml}
@@ -2774,7 +2774,7 @@ function renderCategoryStats() {
           const firstFile = fileData.find(x => x.id === g.fileIds[0]);
           const safeName = escapeAttr(g.label || (firstFile ? firstFile.name.replace(/_[0-9]+$/, '') : 'Collection'));
           
-          const deleteHtml = isAdmin ? `<button onclick="event.stopPropagation(); deleteGroup('${g.id}')" style="position:absolute; right:10px; top:10px; background:rgba(255,0,0,0.2); color:red; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; z-index:10;" title="Delete Collection"><i class="fas fa-trash"></i></button>` : '';
+          const deleteHtml = '';
 
           card.innerHTML = `
             ${deleteHtml}
