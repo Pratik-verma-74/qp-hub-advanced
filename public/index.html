@@ -1482,7 +1482,33 @@ async function loadThumbnail(container) {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     }
   </script>
+
+  
+  <!-- Anti-Inspect & Security -->
+  <script>
+    // Disable Right Click
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    
+    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    document.addEventListener('keydown', function(e) {
+      if(e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || (e.ctrlKey && e.keyCode === 85)) {
+        e.preventDefault();
+        return false;
+      }
+    });
+    
+    // DevTools Debugger Trap
+    setInterval(() => {
+      const before = new Date().getTime();
+      debugger;
+      const after = new Date().getTime();
+      if (after - before > 100) {
+        document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50px;">Security Alert: Developer Tools detected. Access Denied.</h1>';
+      }
+    }, 2000);
+  </script>
 </head>
+
 <body>
 
 <!-- ===== HEADER ===== -->
