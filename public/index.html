@@ -16,6 +16,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <!-- ✅ Firebase Compat SDKs (Production Ready) -->
+<!-- Global Error Boundary for Future-Proofing -->
+<script>
+  window.addEventListener('error', (e) => console.warn('Caught Error:', e.message));
+  window.addEventListener('unhandledrejection', (e) => console.warn('Caught Promise Rejection:', e.reason));
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
