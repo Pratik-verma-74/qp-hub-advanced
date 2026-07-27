@@ -357,6 +357,7 @@
 </script>
 
   
+  
   <!-- Anti-Inspect & Security -->
   <script>
     // Disable Right Click
@@ -534,6 +535,7 @@
       <!-- RESULT PANEL -->
       <div id="resultPanel">
         <h2 class="section-title">Quiz Completed!</h2>
+        <h3 id="resultNameDisplay" style="text-align:center; margin-bottom: 15px; color: var(--accent-1); font-weight: 600;"></h3>
         <div class="result-score" id="finalScoreDisplay">0</div>
         <div class="result-details">
           <p>Scoring: +4 for Correct, -1 for Incorrect</p>
@@ -955,6 +957,12 @@
     function endQuiz() {
       showPanel('resultPanel');
       document.getElementById('finalScoreDisplay').innerText = score;
+      
+      let userName = 'Student';
+      if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+        userName = firebase.auth().currentUser.displayName || 'Student';
+      }
+      document.getElementById('resultNameDisplay').innerText = `Great effort, ${userName}!`;
       
       const accuracy = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
       document.getElementById('accuracyDisplay').innerText = `Accuracy: ${accuracy}% | Correct: ${correctCount} | Incorrect: ${incorrectCount}`;
