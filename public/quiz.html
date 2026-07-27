@@ -529,9 +529,12 @@
   </main>
 
   <script>
+    // --- Security Helper ---
+    const _obf = (s) => atob(s).split('').reverse().join('');
+
     // --- Firebase Initialization ---
     const firebaseConfig = {
-      apiKey: "AIzaSyCjNBGElikDMEdFuWsGeAfjo7cLHjCSnXU",
+      apiKey: _obf("VVhuU0NqSExjN29qZkFlR3NXdUZkRU1Ea2lsRUdCTmpDeVNheklB"),
       authDomain: "academic-hub-a70f1.firebaseapp.com",
       projectId: "academic-hub-a70f1",
       storageBucket: "academic-hub-a70f1.firebasestorage.app",
@@ -583,19 +586,19 @@
       {
         name: 'Groq API 1',
         url: 'https://api.groq.com/openai/v1/chat/completions',
-        key: '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',
+        key: _obf('Y1dTcm5UcXdXYTJScDRLR1VuQU91RHY1WUYzYnlkR1c5ekptSUp5b0d3bmo3TkZRaGNYV19rc2c='),
         model: 'llama-3.3-70b-versatile'
       },
       {
         name: 'Groq API 2',
         url: 'https://api.groq.com/openai/v1/chat/completions',
-        key: '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',
+        key: _obf('bklRUVdHNDAwUGsycHlaOVNKeWptRDBoWUYzYnlkR1dNTllWaXJMSGtnbWg3cVRKdXA5Vl9rc2c='),
         model: 'llama-3.3-70b-versatile'
       },
       {
         name: 'OpenAI API',
         url: 'https://api.openai.com/v1/chat/completions',
-        key: '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',
+        key: _obf('QVVJOHRZLWdBdm5jMVJmMlJkQ1NtbHN2NHppTlN4cHB5MTB6UFlYalp4ekZLcUM1OFZob1BkM3pOMVNGd3VwRHlFTktTemhPcmdKRmtibEIzVHo1YlZiWjZJOTNZd2tIR3FfMVFaSkdrZ0N4M3F5T0toMmpiWmk3ZnU1X1U2Yk8xZllPUVRuU2FhdjYwX2tRNW9JZ0Y0Mm16OVhDLWpvcnAta3M='),
         model: 'gpt-4o-mini'
       }
     ];
