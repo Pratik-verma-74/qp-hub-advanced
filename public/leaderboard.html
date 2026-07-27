@@ -584,6 +584,12 @@
     document.getElementById(tabId).classList.add('active');
   }
 
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash === '#quiz') {
+      const quizBtn = document.querySelectorAll('.tab-btn')[1];
+      if (quizBtn) switchTab('quizTab', quizBtn);
+    }
+  });
 </script>
 <script>
   if ('serviceWorker' in navigator) {
